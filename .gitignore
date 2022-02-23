@@ -1,0 +1,13 @@
+.ipynb_checkpoints
+.vscode
+/__pycache__
+/app/__pycache__
+/app/alpaca/__pycache__
+/app/correlate/__pycache__
+/app/dbase/__pycache__
+/app/experment/__pycache__
+/app/study/__pycache__
+/app/util/__pycache__
+/data
+*.log
+*.txt
