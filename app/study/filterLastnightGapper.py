@@ -1,8 +1,8 @@
 from alpaca_trade_api.rest import REST
 import json
+import logging
 import os
-from util import AlpacaAccess, StockAnalysis, EnvFile
-from dbase import SecDb
+from util import AlpacaAccess, StockAnalysis, EnvFile, AllStocks
 
 class overnightGapper:
     conn: REST = None
@@ -10,7 +10,6 @@ class overnightGapper:
     def __init__(self):
         self.sa = StockAnalysis()
         self.data = self.sa.GetJson
-        self.db = SecDb()
 
     def getLastNightGapper(self, price1, price2):
         priceMin = float(EnvFile.Get('OG_MIN_PRICE', '0.30'))
@@ -35,68 +34,55 @@ class overnightGapper:
         snapshots = self.getSnapshotFromApi(symbols)
         for symbol in snapshots:
             try:
-                isOk, snapshot = self.db.GetLastDaily(symbol)
-                if (isOk):
-                    # price1 = snapshot['close']
-                    price1 = snapshots[symbol]['dailyBar']['c']
-                    price2 = snapshots[symbol]['minuteBar']['c']
-                    nightGap = self.getLastNightGapper(
-                        price1, price2)
-                    # print('{} {} {} {}'.format(symbol, price1, price2, nightGap))
-                    self.sa.UpdateFilter(
-                        self.data, symbol, 'ogap', nightGap)
-                else:
-                    self.sa.UpdateFilter(
-                        self.data, symbol, 'ogap', 0)
-            except Exception as e:
-                try:
-                    print(
-                        'filterLastnightGapper.getSnapshotAtMarketClose(). ERROR: ' + symbol + ': ' + str(e))
-                    self.sa.UpdateFilter(self.data, symbol, 'ogap', 0)
-                except Exception as e:
-                    print(e)
-
-    def getSnapshotAtMarketClose(self, symbols):
-        snapshots = self.getSnapshotFromApi(symbols)
-        for symbol in snapshots:
-            try:
+                # price1 = snapshot['close']
+                price1 = snapshots[symbol]['dailyBar']['c']
                 price2 = snapshots[symbol]['minuteBar']['c']
-                self.db.SetLastDaily(symbol, price2)
+                nightGap = self.getLastNightGapper(
+                    price1, price2)
+                # print('{} {} {} {}'.format(symbol, price1, price2, nightGap))
+                self.sa.UpdateFilter(
+                    self.data, symbol, 'ogap', nightGap)
             except Exception as e:
-                try:
-                    print('filterLastnigthGapper.getSnapshotAtMarketOpen(). ERROR: ' +
-                          symbol + ': ' + str(e))
-                except Exception as e:
-                    print(e)
-                self.db.SetLastDaily(symbol, 0)
+                print(
+                    f'filterLastnightGapper.getSnapshotAtMarketOpen(). ERROR: {symbol} - {e}')
+                logging.error(
+                    f'filterLastnightGapper.getSnapshotAtMarketOpen(). ERROR: {symbol} - {e}')
+                self.sa.UpdateFilter(self.data, symbol, 'ogap', 0)
 
 class LastNightGapper:
-    def __init__(self, isMarketClose, isDebug=None):
+    def __init__(self, isDebug=None):
         self.og = overnightGapper()
         self.isDebug = True if isDebug else False
-        self.func = self.og.getSnapshotAtMarketClose if isMarketClose else self.og.getSnapshotAtMarketOpen
+        self.func = self.og.getSnapshotAtMarketOpen
+
+    def allAvailableSymbols(self):
+        symbols = []
+        AllStocks.Run(symbols.add)
+        return symbols
 
     def symbolLoop(self, func, isDebug:bool):
+        allSymbols = []
+        AllStocks.Run(allSymbols.append)
         lineCount = 0
         symbols = set()
-        for symbol in self.og.data:
+        for symbol in allSymbols:
             lineCount += 1
             symbols.add(symbol)
             if (lineCount % 20 == 0):
                 self.func(symbols)
-            if (isDebug and lineCount % 20 == 0):
-                print(lineCount)
+                symbols = set()
+                if (isDebug):
+                    print(f'filterLastnightGaopper.symbolLoop() - {lineCount}')
         self.func(symbols)
 
     def Run(self):
         self.symbolLoop(self.func, self.isDebug)
 
     @staticmethod
-    def All(isMarketClose:bool):
-        app = LastNightGapper(isMarketClose, isDebug=True)
+    def All():
+        app = LastNightGapper(isDebug=True)
         app.Run()
-        if not isMarketClose:
-            app.og.sa.WriteJson(app.og.data)
+        app.og.sa.WriteJson(app.og.data)
 
 
 if __name__ == "__main__":
@@ -106,4 +92,4 @@ if __name__ == "__main__":
     # data = app.HistoricalPrices(symbol, timeframe)
     # app.WriteToFile(symbol, data)
     #
-    LastNightGapper.All(True)
+    LastNightGapper.All()

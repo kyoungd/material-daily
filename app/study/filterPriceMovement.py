@@ -13,6 +13,9 @@ class FilterPriceMovement:
         self.db = MarketDataDb()
         self.isSaveToDb = True if isSaveToDb == None else isSaveToDb 
         self.priceMultiplierFactor = float(EnvFile.Get('FILTER_PRICE_MULTIPLIER', '0.02'))
+        self.filterMinPrice = float(EnvFile.Get('SNAPSHOT_MIN_PRICE', '3'))
+        self.filterMaxPrice = float(EnvFile.Get('SNAPSHOT_MAX_PRICE', '40'))
+        self.filterMinVolume = float(EnvFile.Get('SNAPSHOT_MIN_VOLUME', '500000'))
 
     def priceMultiplier(self, price):
         return 1 + (price - 3) * self.priceMultiplierFactor
@@ -36,7 +39,7 @@ class FilterPriceMovement:
     def writeToDb(self, symbol: str, df: pd.DataFrame):
         close = df.iloc[0]['Close']
         volume = df.iloc[0]['Volume']
-        if close < 3 or close > 100 or volume < 500000:
+        if close < self.filterMinPrice or close > self.filterMaxPrice or volume < self.filterMinVolume:
             price01 = 0
             price03 = 0
             price30 = 0
