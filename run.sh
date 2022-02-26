@@ -1,14 +1,14 @@
 echo '---------------------- STARTING ----------------------'
 cd /home/young/Desktop/code/trading/candlestick-pattern-analyzer
 
-# if [ $1 == '--day' ]; then
-#     echo '---------------------- CLEAR STAT ----------------------'
-#     rm ./analyzer.log
-#     rm ./data/stocks/*.csv
-#     rm ./data/bak/*.csv
-#     rm ./data/bak/*.json
-#     cp ./data/symbols-empty.json ./data/symbols.json
-# fi
+if [ $1 == '--daily' ]; then
+    echo '---------------------- CLEAR STAT ----------------------'
+    rm ./analyzer.log
+    rm ./data/stocks/*.csv
+    rm ./data/bak/*.csv
+    rm ./data/bak/*.json
+    cp ./data/symbols-empty.json ./data/symbols.json
+fi
 
 echo '---------------------- START APP ----------------------'
 echo $1

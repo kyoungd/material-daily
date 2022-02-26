@@ -6,7 +6,7 @@ import talib
 import os
 from datetime import date
 from util import AllStocks, StockAnalysis, EnvFile
-
+import logging
 
 class engulfingCandle:
     def __init__(self, df, minChangePercent, minChangeValue):
@@ -51,7 +51,8 @@ class FilterCandlePattern:
                 self.sa.UpdateFilter(self.data, symbol, 'engulf', engulf)
             except Exception as e:
                 self.sa.UpdateFilter(self.data, symbol, 'engulf', False)
-                print(e)
+                logging.error(f'filterCandlePattern.Run: {symbol} - {e}')
+                print(f'filterCandlePattern.Run: {symbol} - {e}')
         return False
 
     @staticmethod

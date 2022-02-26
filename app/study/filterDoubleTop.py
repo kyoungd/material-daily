@@ -64,8 +64,8 @@ class FilterDoubleTop:
             isLoaded, df = AllStocks.GetWeeklyStockData(symbol)
             if isLoaded:
                 lastPrice = dfDaily['Close'][0]
-                minmax = TightMinMax(df)
-                isFirstMin, dfMinMax = minmax.Run()
+                minmax = TightMinMax()
+                isFirstMin, dfMinMax = minmax.Run(symbol)
                 app = doubleTop(lastPrice, dfMinMax, isFirstMin, self.doubleTopTolerance)
                 isDoubleTop = app.Run()
                 self.sa.UpdateFilter(

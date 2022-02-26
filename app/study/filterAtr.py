@@ -6,7 +6,7 @@ import talib
 import os
 from datetime import date
 from util import AllStocks, StockAnalysis, EnvFile
-
+import logging
 
 class calculateATR:
     def __init__(self):
@@ -33,7 +33,8 @@ class calculateATR:
                 _avg, _last = self.filterOn(tp)
                 return {'avg': _avg, 'last': _last, 'close': tp['Close'][0]}
             except Exception as e:
-                print(e)
+                logging.error(f'filterAtr.calculateATR.Run: {symbol} - {e}')
+                print(f'filterAtr.calculateATR.Run: {symbol} - {e}')
         return {'avg': 0, 'last': 0, 'close': 0}
 
 
@@ -83,7 +84,8 @@ class FilterAtr:
             #                     self.cleanUp(result['avg']))
             return True
         except Exception as e:
-            print(e)
+            logging.error(f'filterAtr.FilterAtr.Run: {symbol} - {e}')
+            print(f'filterAtr.FilterAtr.Run: {symbol} - {e}')
             return False
 
     @staticmethod

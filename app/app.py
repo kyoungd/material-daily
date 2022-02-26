@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 from datetime import datetime
 from alpaca import *
-from util import PushToServer, SetInterval, UtilTest
+from util import PushToServer, SetInterval, UtilTest, TightMinMax
 from study import *
 from dbase import *
 from correlate import *
@@ -22,6 +22,8 @@ def AppDaily():
     logging.info('----------------------> Complete AlpacaCrypto.All')
     FilterPriceMovement.All(isSaveToDb=True)
     logging.info('----------------------> Complete FilterPriceMovement.All')
+    TightMinMax.All()
+    logging.info('----------------------> Complete TightMinmax.All')
     StockFinancial.All()
     logging.info('----------------------> Complete StockFinancial.All')
     FilterAtr.All()
@@ -52,28 +54,6 @@ def AppDaily():
     logging.info('----------------------> Complete FilterCorrelate.All')
     PushToServer()
     logging.info('----------------------> Complete PushToServer')
-
-    # --------------------------------------------------
-    #
-    # Run()
-    # AlpacaSnapshots.All()
-    # AlpacaHistoricalData.All()
-    # StockFinancial.All(isDebug=True, isForceDownloadYahoo=False)
-    # RemoveNoDataStocks()
-    # FilterAtr.All()
-    # FilterEma.All()
-    # FilterKeyLevels.All()
-    # FilterFibonacciRetracement.All()
-    # FilterThreeBars.All()
-    # FilterRelativeVolume.All()
-    # FilterVolumeProfile.All()
-    # FilterGapper.All()
-    # FilterCandlePattern.All()
-    # FilterDoubleTop.All()
-    # FilterTrends.All()
-    # FilterRsiDivergence.All()
-    # FilterCorrelate.All()
-    # PushToServer()
 
 def AppCorrelation():
     Run()
@@ -120,18 +100,39 @@ if __name__ == "__main__":
     logging.info("APP.PY Started")
 
     if isTagInOptions('--test', sys.argv):
-        # Run()
-        # UtilTest.RunRemoveLastDay()
-        # logging.info('----------------------> Complete Run')
-        # AlpacaDaily.All()
-        # logging.info('----------------------> Complete AlpacaDaily.All')
-        # YahooDaily.All()
-        # logging.info('----------------------> Complete YahooDaily.All')
-        # AlpacaCrypto.All()
-        # logging.info('----------------------> Complete AlpacaCrypto.All')
-        # FilterPriceMovement.All(isSaveToDb=True)
-        # logging.info('----------------------> Complete FilterPriceMovement.All')
+        # logging.info('----------------------> Start TightMinmax.All')
+        # TightMinMax.All()
+        # logging.info('----------------------> Complete TightMinmax.All')
+        # StockFinancial.All()
+        # logging.info('----------------------> Complete StockFinancial.All')
+        # FilterAtr.All()
+        # logging.info('----------------------> Complete FilterAtr.All')
+        FilterEma.All()
+        logging.info('----------------------> Complete FilterEma.All')
+        # FilterKeyLevels.All()
+        # logging.info('----------------------> Complete FilterKeyLevels.All')
+        # FilterFibonacciRetracement.All()
+        # logging.info('----------------------> Complete FilterFibonacciRetracement.All')
+        # FilterThreeBars.All()
+        # logging.info('----------------------> Complete FilterThreeBars.All')
+        # FilterRelativeVolume.All()
+        # logging.info('----------------------> Complete FilterRelativeVolume.All')
+        # FilterVolumeProfile.All()
+        # logging.info('----------------------> Complete FilterVolumeProfile.All')
+        # FilterGapper.All()
+        # logging.info('----------------------> Complete FilterGapper.All')
+        # FilterCandlePattern.All()
+        # logging.info('----------------------> Complete FilterCandlePattern.All')
+        # FilterDoubleTop.All()
+        # logging.info('----------------------> Complete FilterDoubleTop.All')
+        # FilterTrends.All()
+        # logging.info('----------------------> Complete FilterTrends.All')
+        # FilterRsiDivergence.All()
+        # logging.info('----------------------> Complete FilterRsiDivergence.All')
+        # FilterCorrelate.All()
+        # logging.info('----------------------> Complete FilterCorrelate.All')
         PushToServer()
+        logging.info('----------------------> Complete PushToServer')
     elif isTagInOptions('--mo', sys.argv):
         AppMarketOpen()
     elif isTagInOptions('--corr', sys.argv):

@@ -2,7 +2,7 @@ import os
 from util import StockAnalysis, AllStocks, TightMinMax, EnvFile
 import pandas as pd
 import os
-
+import logging
 
 class fibonachiRetracement:
     def __init__(self, close, isFirstMin, df):
@@ -58,8 +58,8 @@ class FilterFibonacciRetracement:
         try:
             isLoaded, dfDaily = AllStocks.GetDailyStockData(symbol)
             close = dfDaily['Close'][0]  # last close price
-            minMax = TightMinMax(dfDaily)
-            isFirstMinimum, df = minMax.Run()
+            minMax = TightMinMax()
+            isFirstMinimum, df = minMax.Run(symbol)
             if (df is None) or (len(df) < 2):
                 return False
             fib = fibonachiRetracement(close, isFirstMinimum, df)
@@ -70,6 +70,7 @@ class FilterFibonacciRetracement:
         except Exception as e:
             self.sa.UpdateFilter(self.jsonData, symbol, 'fibonachi', False)
             self.sa.UpdateFilter(self.jsonData, symbol, 'fibs', {})
+            logging.error(f'FilterFibonacciRetracement.Run: {symbol} - {e}')
             print(symbol, e)
             return False
 

@@ -3,16 +3,22 @@ import pandas as pd
 import os
 import copy
 from scipy.signal import argrelextrema
+import logging
+from dbase import MarketDataDb
 from .allstocks import AllStocks
 from .environ import EnvFile
+from datetime import datetime
 
 class TightMinMax:
-    def __init__(self, df, tightMinMaxN = None, colName = None):
+    db = None
+
+    def __init__(self, isSaveToDb=None, tightMinMaxN = None, colName = None):
         self.colName = 'Close' if colName is None else colName
-        self.df = df
-        self.df = self.df.reset_index()
         n = int(EnvFile.Get('TIGHT_MINMAX_N', '2'))
         self.minMaxN = n if tightMinMaxN is None else tightMinMaxN
+        self.isSaveToDb = False if isSaveToDb is None else isSaveToDb
+        if TightMinMax.db is None:
+            TightMinMax.db = MarketDataDb()
 
     def getRangeMax(self, df):
         rows = []
@@ -76,9 +82,8 @@ class TightMinMax:
         df1 = pd.DataFrame(minMaxSet)
         return firstMin, df1
 
-    def getMinMax(self, df=None):
-        if df is None:
-            df = self.df
+    def getMinMax(self, df):
+        df = df.reset_index()
         n = self.minMaxN        # number of points to be checked before and after
 
         df['up'] = self.getRangeMax(df)
@@ -92,10 +97,46 @@ class TightMinMax:
         isFirstMin, df1 = self.removeDuplicateMinMax(df)
         return isFirstMin, df1
 
-    def Run(self):
-        isFirstMin, df1 = self.getMinMax()
-        return isFirstMin, df1
+    def readFromDb(self, symbol):
+        query = """SELECT keylevels, is_first_key_level_min FROM public.market_data WHERE symbol=%s AND timeframe=%s AND NOT is_deleted"""
+        params = (symbol, '1Day')
+        isOk, results = TightMinMax.db.SelectQuery(query, params)
+        if isOk:
+            row = results[0]
+            data = row[0]
+            isFirstKeyLevelMin = row[1]
+            return isFirstKeyLevelMin, data
+        return False, None
 
+    def saveToDb(self, symbol, isFirstMin, data):
+        time_now = datetime.now()
+        query = """UPDATE public.market_data SET keylevels=%s, is_first_key_level_min=%s, updated_at=%s WHERE symbol=%s AND timeframe=%s AND NOT is_deleted"""
+        params = (data, isFirstMin, time_now, symbol, '1Day')
+        TightMinMax.db.UpdateQuery(query, params)
+
+
+    def Run(self, symbol):
+        try:
+            if not self.isSaveToDb:
+                isFirstMin, df = self.readFromDb(symbol)
+                if df is not None:
+                    return isFirstMin, pd.DataFrame(df)
+            isOk, df = AllStocks.GetDailyStockData(symbol)
+            if isOk:
+                isFirstMin, df1 = self.getMinMax(df)
+                if self.isSaveToDb:
+                    data = df1.to_json(orient='records')
+                    self.saveToDb(symbol, isFirstMin, data)
+                return isFirstMin, df1
+            return False, None
+        except Exception as e:
+            logging.error(f'TightMinMax.Run: {symbol} - {e}')
+            print(f'TightMinMax.Run: {symbol} - {e}')
+
+    @staticmethod
+    def All():
+        app = TightMinMax(isSaveToDb=True)
+        AllStocks.Run(app.Run, False)
 
 if __name__ == '__main__':
     symbol = 'AAPL'

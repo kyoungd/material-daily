@@ -113,8 +113,8 @@ class FilterTrends:
             isLoaded, dfDaily = AllStocks.GetDailyStockData(symbol)
             if isLoaded:
                 close = dfDaily['Close'][0]  # last close price
-                minMax = TightMinMax(dfDaily)
-                isFirstMinimum, df = minMax.Run() # calculate local min
+                minMax = TightMinMax()
+                isFirstMinimum, df = minMax.Run(symbol) # calculate local min
                 if df is not None and (len(df.index) > 3):
                     trend = trendMinMax(df, isFirstMinimum, close)
                     trendPeaks, reversePeaks = trend.Run()
