@@ -12,6 +12,24 @@ class trendMinMax:
         self.minimumTrend = float(EnvFile.Get("FITLER_TREND_COUNT", '1.5'))
         self.minimumDelta = float(EnvFile.Get("FITLER_TREND_DELTA", '0.03'))
 
+    def isIncludeTodayClose(self, todayClose:float, df: pd.DataFrame):
+        pivot1 = df.iloc[0]['Close']
+        pivot2 = df.iloc[1]['Close']
+        pivot3 = df.iloc[2]['Close']
+        if todayClose == pivot1:  # same data point as last pivot.  ignore.
+            return False
+        if (pivot1 > pivot3): # trending up
+            if (pivot1 > pivot2): # pivot1 is max
+                return todayClose < pivot2
+            else: # pivot1 is min
+                return False
+        else: #trending down
+            if (pivot1 > pivot2): #pivot1 is max
+                return False
+            else: #pivot1 is min
+                return todayClose > pivot2
+        return False
+
     def getDirections(self, df: pd.DataFrame, isFirstMin:bool, minDelta: float)->list:
         try:
             directions = []
@@ -21,13 +39,10 @@ class trendMinMax:
                 if ix >= 2:
                     thisValue = row['Close']
                     lastValue = df.iloc[ix - 2]['Close']
-                    delta = lastValue * minDelta
-                    if thisValue > lastValue + delta:
+                    if thisValue > lastValue:
                         directions.append('up')
-                    elif thisValue < lastValue - delta:
-                        directions.append('down')
                     else:
-                        directions.append('flat')
+                        directions.append('down')
             return directions
         except Exception as e:
             logging.error(f'trendMinMax.getDirections: {e}')
@@ -36,26 +51,24 @@ class trendMinMax:
     def trendingLoops(self, directions: list, isFirstMin: bool, close: float, minDelta: float) -> bool:
         try:
             dir1 = directions[0]
-            dir2 = None
+            dir2 = dir1
             count1 = 0
             count2 = 0
-            for direction in directions:
-                if direction != 'flat':
-                    if dir2 is None:
-                        if direction != dir1:
-                            dir2 = direction
-                            count2 + 0.5
-                        else:
-                            count1 += 0.5
+            isFirstTrend = True
+            for dir1 in directions:
+                if dir1 == dir2:
+                    if isFirstTrend:
+                        count1 += 0.5
                     else:
-                        if direction == dir2:
-                            count2 += 0.5
-                        else:
-                            return count1, count2
-            if count2 > self.minimumTrend:
-                return count2, 0
-            elif count1 > self.minimumTrend:
-                return count1, count2
+                        count2 += 0.5
+                else:
+                    if isFirstTrend:
+                        isFirstTrend = False
+                        count2 += 0.5
+                    else:
+                        return count1, count2
+                dir2 = dir1
+            return count1, count2
         except Exception as e:
             logging.error(f'trendMinMax.trendingLoops: {e}')
             return 0, 0
@@ -64,7 +77,11 @@ class trendMinMax:
         directions = self.getDirections(self.df, self.isFirstMin, self.minimumDelta)
         if len(directions) <= 0:
             return 0, 0
-        return self.trendingLoops(directions, self.isFirstMin, self.close, self.minimumDelta)
+        trend1, trend2 = self.trendingLoops(directions, self.isFirstMin, self.close, self.minimumDelta)
+        if self.isIncludeTodayClose(self.close, self.df):
+            return 0.5, trend1
+        else:
+            return trend1, trend2
 
     # # Count min/max, higher high + higher low is up.
     # # Count min/max, lower high + lower low is down.

@@ -10,6 +10,12 @@ if [ $1 == '--daily' ]; then
     cp ./data/symbols-empty.json ./data/symbols.json
 fi
 
+if [ $1 == '--corr' ]; then
+    echo '---------------------- CLEAR STAT ----------------------'
+    rm ./data/corr*.json
+    rm ./data/inve*.json
+fi
+
 echo '---------------------- START APP ----------------------'
 echo $1
 python3 app/app.py $1

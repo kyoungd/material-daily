@@ -11,13 +11,6 @@ class overnightGapper:
         self.sa = StockAnalysis()
         self.data = self.sa.GetJson
 
-    def getLastNightGapper(self, price1, price2):
-        priceMin = float(EnvFile.Get('OG_MIN_PRICE', '0.30'))
-        percentMin = float(EnvFile.Get('OG_MIN_PERCENT', '0.05'))
-        priceMoveValue = abs(price2 - price1)
-        priceMovePercent = priceMoveValue / price1
-        return round(priceMovePercent * 100)
-
     def getSnapshotFromApi(self, symbols):
         data = AlpacaAccess.HistoricalSnapshots(symbols)
         if (data.status_code == 422):
@@ -37,11 +30,10 @@ class overnightGapper:
                 # price1 = snapshot['close']
                 price1 = snapshots[symbol]['dailyBar']['c']
                 price2 = snapshots[symbol]['minuteBar']['c']
-                nightGap = self.getLastNightGapper(
-                    price1, price2)
+                nightGap = abs(price2 - price1) / min(price1, price2)
                 # print('{} {} {} {}'.format(symbol, price1, price2, nightGap))
                 self.sa.UpdateFilter(
-                    self.data, symbol, 'ogap', nightGap)
+                    self.data, symbol, 'ogap', round(nightGap*100))
             except Exception as e:
                 print(
                     f'filterLastnightGapper.getSnapshotAtMarketOpen(). ERROR: {symbol} - {e}')

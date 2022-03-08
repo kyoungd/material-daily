@@ -1,5 +1,5 @@
 from unittest import mock, TestCase
-from study import FilterThreeBars
+from study import filterThreeBarsRetrace
 import pandas as pd
 
 
@@ -19,7 +19,7 @@ class TestFilterThreeBars(TestCase):
                     [p0, p1, p2, p3]
                 }
         df = pd.DataFrame(data)
-        fib = FilterThreeBars()
+        fib = filterThreeBarsRetrace()
         result = fib.ThreeBarLogic(df)
         return result
 

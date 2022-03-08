@@ -60,25 +60,25 @@ class TestFilterGappers(TestCase):
         gapUp = filter.gapUpPriceMovementCheck(gapUp, df)
         self.assertEqual(len(gapUp), 1)
 
-    def testOvernightGapperDown_Fail_SwingBack(self):
+    def testOvernightGapperDown_Success_1(self):
         df = self.setupDf(
             100.1, 101.2, 90.3, 90.4, 102.5, 101.6,
             101.1, 100.2, 89.3, 89.4, 99.5, 101.6)
         filter = FilterGapper()
         gaps = filter.overnightGapperLogic(df)
-        self.assertEqual(len(gaps), 0)
+        self.assertEqual(len(gaps), 1)
         # _, gapDown = filter.filterOn(df)
         # gapDown = filter.gapDownNearClose(gapDown, 92)
         # gapDown = filter.gapDownPriceMovementCheck(gapDown, df)
         # self.assertEqual(len(gapDown), 0)
 
-    def testOvernightGapperUp_Fail_SwingBack(self):
+    def testOvernightGapperUp_Success_2(self):
         df = self.setupDf(
             90.1, 101.2, 100.3, 90.4, 90.5, 91.6,
             90.1, 101.2, 100.3, 90.4, 91.5, 91.6)
         filter = FilterGapper()
         gaps = filter.overnightGapperLogic(df)
-        self.assertEqual(len(gaps), 0)
+        self.assertEqual(len(gaps), 1)
         # gapUp, _ = filter.filterOn(df)
         # gapUp = filter.gapUpNearClose(gapUp, 101)
         # gapUp = filter.gapUpPriceMovementCheck(gapUp, df)

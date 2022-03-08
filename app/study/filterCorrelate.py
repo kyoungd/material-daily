@@ -14,12 +14,20 @@ class FilterCorrelate:
         self.correlates = JsonFavorite(filename=corrFile).GetJson
         self.inverses = JsonFavorite(filename=invsFile).GetJson
 
+    def customSort(self, k):
+        return list(k.values())[0]
+
     def analyzieMatix(self, symbol, rows):
+        rows.sort(key=self.customSort, reverse=True)
         symbols = []
+        lineCount = 0
         for row in rows:
+            lineCount += 1
             key = list(row.keys())[0]
             if key != symbol:
                 symbols.append(key)
+            if lineCount >= 5:
+                return symbols
         return symbols
 
     def corrMatch(self, symbol, corrs, colname):

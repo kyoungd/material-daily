@@ -73,7 +73,7 @@ class FilterAtr:
             else:
                 change = changeRate / 2
             filterState = True if change < self.atrFilterRate else False
-            self.sa.UpdateFilter(self.data, symbol, 'FilterAtr', filterState)
+            # self.sa.UpdateFilter(self.data, symbol, 'FilterAtr', filterState)
             self.sa.UpdateFilter(self.data, symbol, 'atr',
                                 self.cleanUp(result['last']))
             self.sa.UpdateFilter(self.data, symbol, 'close',
