@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 from datetime import datetime
 from alpaca import *
-from util import PushToServer, SetInterval, TightMinMax
+from util import PushToServer, SetInterval, TightMinMax, ProductionAssetDataSync
 from study import *
 from dbase import *
 from correlate import *
@@ -39,8 +39,8 @@ def AppDaily():
     # FilterRelativeVolume.All()
     logging.info('----------------------> Complete FilterRelativeVolume.All')
     FilterVolumeProfile.All()
-    logging.info('----------------------> Complete FilterVolumeProfile.All')
-    FilterGapper.All()
+    # logging.info('----------------------> Complete FilterVolumeProfile.All')
+    # FilterGapper.All()
     logging.info('----------------------> Complete FilterGapper.All')
     FilterCandlePattern.All()
     logging.info('----------------------> Complete FilterCandlePattern.All')
@@ -101,9 +101,7 @@ if __name__ == "__main__":
     logging.info("APP.PY Started")
 
     if isTagInOptions('--test', sys.argv):
-        FilterLongWickCandle.All()
-        logging.info('----------------------> Complete FilterLongWickCandle.All')
-        PushToServer()
+        ProductionAssetDataSync.All()
         logging.info('----------------------> Complete PushToServer')
     elif isTagInOptions('--mo', sys.argv):
         AppMarketOpen()
