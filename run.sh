@@ -7,7 +7,8 @@ if [ $1 == '--daily' ]; then
     rm ./data/stocks/*.csv
     rm ./data/bak/*.csv
     rm ./data/bak/*.json
-    cp ./data/symbols-empty.json ./data/symbols.json
+    rm ./data/symbols.json
+    cp ./data/basic/symbols-empty.json ./data/symbols.json
 fi
 
 if [ $1 == '--corr' ]; then

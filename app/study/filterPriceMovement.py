@@ -52,23 +52,33 @@ class FilterPriceMovement:
         params = (price01, price03, price30, time_now, float(close), int(volume), symbol, '1Day')
         self.db.UpdateQuery(query, params)
 
+    def writeToDbZero(self, symbol):
+        time_now = datetime.now()
+        query = """UPDATE public.market_data SET volatility01=0, volatility03=0, volatility30=0, updated_at=%s WHERE symbol=%s AND timeframe=%s AND NOT is_deleted"""
+        params = (time_now, symbol, '1Day')
+        self.db.UpdateQuery(query, params)
+
     def Run(self, symbol: str):
         isLoaded, df = AllStocks.GetDailyStockData(symbol)
         if isLoaded:
             try:
                 value = self.priceMovement(df)
-                self.sa.UpdateFilter(self.jsonData, symbol, 'pm', value)
                 if self.isSaveToDb:
                     self.writeToDb(symbol, df)
+                else:
+                    self.sa.UpdateFilter(self.jsonData, symbol, 'pm', value)
             except Exception as e:
                 logging.error(f'FilterPriceMovement.Run: {symbol} - {e}')
                 print(f'FilterPriceMovement.Run: {symbol} - {e}')
-                self.sa.UpdateFilter(self.jsonData, symbol, 'pm', 0)
+                if self.isSaveToDb:
+                    self.writeToDbZero(symbol)
+                else:
+                    self.sa.UpdateFilter(self.jsonData, symbol, 'pm', 0)
         return isLoaded
 
     @staticmethod
     def All(isSaveToDb: bool = None):
-        isSaveToDb = False if isSaveToDb is None else isSaveToDb
+        isSaveToDb = True if isSaveToDb is None else isSaveToDb
         filter = FilterPriceMovement(True)
         AllStocks.RunFromDbAll(filter.Run)
         filter.sa.WriteJson(filter.jsonData)

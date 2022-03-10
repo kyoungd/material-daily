@@ -6,35 +6,36 @@ import logging
 
 class longWickCandle:
     def __init__(self, period = None):
-        self.wickPeriodBarCount = int(EnvFile.Get('FILTER_WICK_PERIOD_BAR_COUNT', '5')) if period is None else period
+        self.wickPeriodBarCount = int(EnvFile.Get('FILTER_WICK_PERIOD_BAR_COUNT', '25')) if period is None else period
+        self.volumeAverageBarCount = int(EnvFile.Get('FILTER_VOLUME_AVERAGE_BAR_COUNT', '20'))
 
     def isCanCalculate(self, df: pd.DataFrame, period:int):
         return False if len(df) < period else True
 
-    def avgSwing(self, df: pd.DataFrame, period: int, swingFunc) -> float:
+    def avgSwing(self, df: pd.DataFrame, swingFunc) -> float:
         swingTotal:float = 0
-        swingPeriod:int = period * 4 if len(df) > period * 4 else len(df)
+        swingPeriod:int = self.volumeAverageBarCount if len(df) > self.volumeAverageBarCount else len(df)
         swingMax:float = 0
         for _, row in df[:swingPeriod].iterrows():
             swing = swingFunc(row)
             swingMax = max(swingMax, swing)
             swingTotal += swing
-        avgSwing:float = (swingTotal - swingMax) / (swingPeriod - 1)
-        return avgSwing
+        oneAvgSwing:float = (swingTotal - swingMax) / (swingPeriod - 1)
+        return oneAvgSwing
 
-    def avgHighLowSwing(self, df: pd.DataFrame, period:int) -> float:
-        return self.avgSwing(df, period, lambda row: abs(row.High - row.Low))
+    def avgHighLowSwing(self, df: pd.DataFrame) -> float:
+        return self.avgSwing(df, lambda row: abs(row.High - row.Low))
 
-    def avgVolumeSwing(self, df:pd.DataFrame, period: int) -> float:
-        return self.avgSwing(df, period, lambda row: abs(row.Volume))
+    def avgVolumeSwing(self, df:pd.DataFrame) -> float:
+        return self.avgSwing(df, lambda row: abs(row.Volume))
 
-    def avgOpenCloseSwing(self, df: pd.DataFrame, period:int) -> float:
-        return self.avgSwing(df, period, lambda row: abs(row.Close - row.Open))
+    def avgOpenCloseSwing(self, df: pd.DataFrame) -> float:
+        return self.avgSwing(df, lambda row: abs(row.Close - row.Open))
 
     # maxWickRange = High - Low (wick range)
     def maxWickRange(self, symbol:str, df: pd.DataFrame, period:int) -> float:
         try:
-            avgSwing:float = self.avgHighLowSwing(df, period)
+            avgSwing:float = self.avgHighLowSwing(df)
             maxWickRange:float = 0
             for _, row in df[:period].iterrows():
                 wickRange = row.High - row.Low
@@ -48,7 +49,7 @@ class longWickCandle:
     # maxWickHeight = (maxWickRange - maxWickPrice) / avgSwing (wick only range compared to the average wick range)
     def maxWickHeight(self, symbol:str, df: pd.DataFrame, period:int) -> float:
         try:
-            avgSwing:float = self.avgHighLowSwing(df, period)
+            avgSwing:float = self.avgHighLowSwing(df)
             maxWickHeight:float = 0
             for _, row in df[:period].iterrows():
                 wickRange:float = row.High - row.Low
@@ -63,11 +64,11 @@ class longWickCandle:
 
     def volumeClimax(self, symbol:str, df: pd.DataFrame, period:int) -> float:
         try:
-            avgVolumeSwing:float = self.avgVolumeSwing(df, period)
+            avgVolSwing:float = self.avgVolumeSwing(df)
             maxVolume:float = 0
             for _, row in df[:period].iterrows():
                 maxVolume = max(maxVolume, row.Volume)
-            volChange = maxVolume / avgVolumeSwing
+            volChange = maxVolume / avgVolSwing
             return volChange
         except Exception as e:
             logging.error(f'FilterLongWickCandle.volumeClimax: {symbol} - {e}')
@@ -76,11 +77,11 @@ class longWickCandle:
 
     def priceJump(self, symbol:str, df: pd.DataFrame, period:int) -> float:
         try:
-            avgVolumeSwing:float = self.avgVolumeSwing(df, period)
-            avgPriceSwing:float = self.avgOpenCloseSwing(df, period)
+            avgVolSwing:float = self.avgVolumeSwing(df)
+            avgPriceSwing:float = self.avgOpenCloseSwing(df)
             maxPriceMove:float = 0
             for _, row in df[:period].iterrows():
-                if avgVolumeSwing > row.Volume:
+                if avgVolSwing > row.Volume:
                     maxPriceMove = max(maxPriceMove, abs(row.Close - row.Open))
             priceChange = maxPriceMove / avgPriceSwing            
             return priceChange

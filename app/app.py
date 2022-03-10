@@ -56,6 +56,8 @@ def AppDaily():
     logging.info('----------------------> Complete FilterLongWickCandle.All')
     PushToServer()
     logging.info('----------------------> Complete PushToServer')
+    ProductionAssetDataSync.All()
+    logging.info('----------------------> Complete ProductionAssetDataSync')
 
 def AppCorrelation():
     # Run()
@@ -101,8 +103,8 @@ if __name__ == "__main__":
     logging.info("APP.PY Started")
 
     if isTagInOptions('--test', sys.argv):
-        ProductionAssetDataSync.All()
-        logging.info('----------------------> Complete PushToServer')
+        FilterLongWickCandle.All()
+        logging.info('----------------------> Complete FilterLongWickCandle.All')
     elif isTagInOptions('--mo', sys.argv):
         AppMarketOpen()
     elif isTagInOptions('--corr', sys.argv):
