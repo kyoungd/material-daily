@@ -1,13 +1,15 @@
 import os
-from util import StockAnalysis, AllStocks, TightMinMax, EnvFile
 import pandas as pd
 import os
 import logging
+from util import StockAnalysis, AllStocks, TightMinMax, EnvFile
+from .filterAccDis import WyckoffAccumlationDistribution
 
 class longWickCandle:
     def __init__(self, period = None):
         self.wickPeriodBarCount = int(EnvFile.Get('FILTER_WICK_PERIOD_BAR_COUNT', '25')) if period is None else period
         self.volumeAverageBarCount = int(EnvFile.Get('FILTER_VOLUME_AVERAGE_BAR_COUNT', '20'))
+        self.wyckoff = WyckoffAccumlationDistribution()
 
     def isCanCalculate(self, df: pd.DataFrame, period:int):
         return False if len(df) < period else True
@@ -66,14 +68,17 @@ class longWickCandle:
         try:
             avgVolSwing:float = self.avgVolumeSwing(df)
             maxVolume:float = 0
-            for _, row in df[:period].iterrows():
-                maxVolume = max(maxVolume, row.Volume)
+            climaxIndex: int = 0
+            for index, row in df[:period].iterrows():
+                if maxVolume < row.Volume:
+                    maxVolume = row.Volume
+                    climaxIndex = index
             volChange = maxVolume / avgVolSwing
-            return volChange
+            return volChange, climaxIndex
         except Exception as e:
             logging.error(f'FilterLongWickCandle.volumeClimax: {symbol} - {e}')
             print(f'FilterLongWickCandle.volumeClimax: {symbol} - {e}')
-            return 0
+            return 0, 0
 
     def priceJump(self, symbol:str, df: pd.DataFrame, period:int) -> float:
         try:
@@ -95,9 +100,10 @@ class longWickCandle:
         if self.isCanCalculate(df, period):
             wickRange = self.maxWickRange(symbol, df, period)
             wickHeight = self.maxWickHeight(symbol, df, period)
-            volClimax = self.volumeClimax(symbol, df, period)
+            volClimax, climaxIndex = self.volumeClimax(symbol, df, period)
             pJump = self.priceJump(symbol, df, period)
-            return wickRange, wickHeight, volClimax, pJump
+            isAccDis = False if climaxIndex <= 0 else self.wyckoff.Run(symbol, df, volClimax, climaxIndex)
+            return wickRange, wickHeight, volClimax, pJump, isAccDis
         else:
             return 0, 0
 
@@ -112,17 +118,19 @@ class FilterLongWickCandle:
         try:
             isLoaded, df = AllStocks.GetDailyStockData(symbol)
             if isLoaded:
-                maxRange, maxHeight, volClimax, pJump = self.wick.Run(symbol, df)
+                maxRange, maxHeight, volClimax, pJump, isAccDis = self.wick.Run(symbol, df)
                 self.sa.UpdateFilter(self.jsonData, symbol, 'wr', round(maxRange*100))
                 self.sa.UpdateFilter(self.jsonData, symbol, 'wh', round(maxHeight*100))
                 self.sa.UpdateFilter(self.jsonData, symbol, 'vc', round(volClimax*100))
                 self.sa.UpdateFilter(self.jsonData, symbol, 'pj', round(pJump*100))
+                self.sa.UpdateFilter(self.jsonData, symbol, 'ad', isAccDis)
             return False
         except Exception as e:
             self.sa.UpdateFilter(self.jsonData, symbol, 'wr', 0)
             self.sa.UpdateFilter(self.jsonData, symbol, 'wh', 0)
             self.sa.UpdateFilter(self.jsonData, symbol, 'vc', 0)
             self.sa.UpdateFilter(self.jsonData, symbol, 'pj', 0)
+            self.sa.UpdateFilter(self.jsonData, symbol, 'ad', False)
             logging.error(f'FilterLongWickCandle.Run: {symbol} - {e}')
             print(f'FilterLongWickCandle.Run: {symbol} - {e}')
             return False

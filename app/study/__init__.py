@@ -15,4 +15,5 @@ from .filterTrend import FilterTrends, trendMinMax
 from .filterRsiDivergence import FilterRsiDivergence
 from .filterCorrelate import FilterCorrelate
 from .filterPriceMovement import FilterPriceMovement
+from .filterAccDis import WyckoffAccumlationDistribution
 from .filterLongCandlwWick import FilterLongWickCandle

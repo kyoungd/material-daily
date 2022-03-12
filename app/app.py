@@ -105,6 +105,8 @@ if __name__ == "__main__":
     if isTagInOptions('--test', sys.argv):
         FilterLongWickCandle.All()
         logging.info('----------------------> Complete FilterLongWickCandle.All')
+        PushToServer()
+        logging.info('----------------------> Complete PushToServer')
     elif isTagInOptions('--mo', sys.argv):
         AppMarketOpen()
     elif isTagInOptions('--corr', sys.argv):
