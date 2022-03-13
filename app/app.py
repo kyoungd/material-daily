@@ -77,10 +77,13 @@ def AppCorrelation():
     CorrelateAssets.All(isSendToServer=False, days=180, minAtr=5)
     logging.info(f'----------------------> Complete CorrelateAssets.All')
 
-def AppMarketOpen():
+def AppMarketOpen(isCenterOfControl=False):
     logging.info('----------------------> Start LastNightGapper')
     LastNightGapper.All()
     logging.info('----------------------> Start LastNightGapper')
+    if isCenterOfControl:
+        FilterCenterOfControlVP.All(True)
+        logging.info('----------------------> Complete filterCenterOfControlVP')
     PushToServer()
     logging.info('----------------------> Complete PushToServer')
 
@@ -90,11 +93,11 @@ def RunApp():
     if today.hour == 0 and today.minute == 30:
         AppDaily()
     elif today.hour == 5 and today.minute == 30:
-        AppMarketOpen()
+        AppMarketOpen(False)
     elif today.hour == 6 and today.minute == 0:
-        AppMarketOpen()
+        AppMarketOpen(False)
     elif today.hour == 6 and today.minute == 20:
-        AppMarketOpen()
+        AppMarketOpen(True)
 
 if __name__ == "__main__":
     formatter = '%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s'
@@ -103,8 +106,10 @@ if __name__ == "__main__":
     logging.info("APP.PY Started")
 
     if isTagInOptions('--test', sys.argv):
-        FilterLongWickCandle.All()
-        logging.info('----------------------> Complete FilterLongWickCandle.All')
+        # FilterCenterOfControlVP.All(False)
+        # logging.info('----------------------> Complete filterCenterOfControlVP')
+        # FilterLongWickCandle.All()
+        # logging.info('----------------------> Complete FilterLongWickCandle.All')
         PushToServer()
         logging.info('----------------------> Complete PushToServer')
     elif isTagInOptions('--mo', sys.argv):

@@ -22,7 +22,7 @@ class TightMinMax:
 
     def getRangeMax(self, df):
         rows = []
-        for row in df.iterrows():
+        for _, row in df.iterrows():
             open = row[1]['Open']
             close = row[1]['Close']
             rows.append(open if open > close else close)
@@ -30,7 +30,7 @@ class TightMinMax:
 
     def getRangeMin(self, df):
         rows = []
-        for row in df.iterrows():
+        for _, row in df.iterrows():
             open = row[1]['Open']
             close = row[1]['Close']
             rows.append(open if open < close else close)

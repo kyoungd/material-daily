@@ -154,6 +154,21 @@ class AllStocks:
             print(f'allstocks.GetWeeklyStockData() failed - {e}')
             return False, None
 
+    @staticmethod
+    def Get1MinuteStockData(symbol):
+        try:
+            db = MarketDataDb()
+            sql = """SELECT data FROM public.market_data WHERE symbol=%s AND timeframe='1Min' AND NOT is_deleted"""
+            params = (symbol,)
+            isOk, results = db.SelectQuery(sql, params)
+            if isOk:
+                df: pd.DataFrame = pd.DataFrame(results[0][0])
+                return True, df
+            return False, None
+        except Exception as e:
+            logging.error(f'allstocks.Get1MinuteStockData() failed - {e}')
+            print(f'allstocks.Get1MinuteStockData() failed - {e}')
+            return False, None
 
 if __name__ == '__main__':
     result = AllStocks.GetWeeklyStockData('AAPL')

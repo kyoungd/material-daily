@@ -71,6 +71,42 @@ class AlpacaSnapshots:
         else:
             return True
 
+    def downloadSnapshotBatch(self, symbols:list):
+        data = self.HistoricalSnapshots(symbols)
+        if (data.status_code == 422):
+            removeSymbols = json.loads(data.text)['message'].split(':')[1]
+            rejectedSymbols = set()
+            for symbol in removeSymbols.strip().split(','):
+                rejectedSymbols.add(symbol)
+            symbolList = symbols.difference(rejectedSymbols)
+            data = self.HistoricalSnapshots(symbolList)
+        snapshots = json.loads(data.text)
+        return snapshots
+
+    def executeSnapshots(self, data, func):
+        for symbol in data:
+            try:
+                func(symbol, data[symbol])
+            except Exception as e:
+                logging.error(f'AlpacaSnapshot.executeSnapshots(). ERROR: {e}')
+                print(f'AlpacaSnapshot.executeSnapshots(). ERROR: {symbol} {e}')
+
+    def DownloadSnapshotsAndRun(self, symbols:list, func):
+        try:
+            batch = []
+            for symbol in symbols:
+                batch.append(symbol)
+                if len(batch) % 20 == 0:
+                    data = self.downloadSnapshotBatch(batch)
+                    self.executeSnapshots(data, func)
+                    batch = []
+            if len(batch) > 0:
+                data = self.downloadSnapshotBatch(batch)
+                self.executeSnapshots(data, func)
+        except Exception as e:
+            logging.error(f'AlpacaSnapshot.DownloadSnapshots(). ERROR: {symbol} {e}')
+            print(f'AlpacaSnapshot.DownloadSnapshots(). ERROR: {symbol} {e}')
+
     def getSnapshot(self, symbols, dicts):
         data = self.HistoricalSnapshots(symbols)
         if (data.status_code == 422):

@@ -12,7 +12,7 @@ class WyckoffAccumlationDistribution:
         self.barCountDistribution = 3
         self.barCountVolClimaxRebound = 2
         self.barCountAccumulation = 8
-        self.minVolumeClimax = 600
+        self.minVolumeClimax = 7.0  # minimum volume climax - 600%
         self.isConsolidating = 61.8
         self.isTrending = 38.2
 
