@@ -1,7 +1,7 @@
 import json
 import logging
 import pandas as pd
-from util import StockAnalysis, AllStocks
+from util import StockAnalysis, AllStocks, EnvFile
 from alpaca import AlpacaHistorical, AlpacaSnapshots
 from dbase import MarketDataDb
 from datetime import datetime, timedelta
@@ -10,10 +10,10 @@ class FilterCenterOfControlVP:
     def __init__(self):
         self.sa = StockAnalysis()
         self.jsonData = self.sa.GetJson
-        self.minRange = 3
-        self.maxRange = 30
-        self.vpMin = 20 / 100.0
-        self.vpMax = 80 / 100.0
+        self.minRange = float(EnvFile.Get('VPCC_MIN_RANGE', '1'))
+        self.maxRange = float(EnvFile.Get('VPCC_MAX_RANGE', '10'))
+        self.vpMin = float(EnvFile.Get('VPCC_INRANGE_LOW', '0.2'))
+        self.vpMax = float(EnvFile.Get('VPCC_INRANGE_HIGH', '0.8'))
 
     def getAllSymbols(self) -> list:
         data = self.jsonData

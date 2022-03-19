@@ -90,7 +90,7 @@ def AppMarketOpen(isCenterOfControl=False):
 def RunApp():
     today = datetime.now()
     print(f'{today.hour} {today.minute}')
-    if today.hour == 0 and today.minute == 30:
+    if today.hour == 0 and today.minute == 45:
         AppDaily()
     elif today.hour == 5 and today.minute == 30:
         AppMarketOpen(False)
