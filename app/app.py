@@ -53,6 +53,8 @@ def AppDaily():
     FilterCorrelate.All()
     logging.info('----------------------> Complete FilterCorrelate.All')
     FilterLongWickCandle.All()
+    logging.info('----------------------> Complete FilterVolumeSpreadAnalysis.All')
+    FilterVolumeSpreadAnalysis.All()
     logging.info('----------------------> Complete FilterLongWickCandle.All')
     PushToServer()
     logging.info('----------------------> Complete PushToServer')
@@ -80,8 +82,8 @@ def AppCorrelation():
 def AppMarketOpen(isCenterOfControl=False):
     logging.info('----------------------> Start LastNightGapper')
     LastNightGapper.All()
-    logging.info('----------------------> Start LastNightGapper')
     if isCenterOfControl:
+        logging.info('----------------------> Start filterCenterOfControlVP')
         FilterCenterOfControlVP.All(True)
         logging.info('----------------------> Complete filterCenterOfControlVP')
     PushToServer()
@@ -90,7 +92,7 @@ def AppMarketOpen(isCenterOfControl=False):
 def RunApp():
     today = datetime.now()
     print(f'{today.hour} {today.minute}')
-    if today.hour == 0 and today.minute == 45:
+    if today.hour == 0 and today.minute == 15:
         AppDaily()
     elif today.hour == 5 and today.minute == 30:
         AppMarketOpen(False)
@@ -110,8 +112,11 @@ if __name__ == "__main__":
         # logging.info('----------------------> Complete filterCenterOfControlVP')
         # FilterLongWickCandle.All()
         # logging.info('----------------------> Complete FilterLongWickCandle.All')
-        PushToServer()
-        logging.info('----------------------> Complete PushToServer')
+        # FilterVolumeSpreadAnalysis.All()
+        # logging.info('----------------------> Complete FilterVolumeSpreadAnalysis.All')
+        AppMarketOpen(True)
+        # PushToServer()
+        # logging.info('----------------------> Complete PushToServer')
     elif isTagInOptions('--mo', sys.argv):
         AppMarketOpen()
     elif isTagInOptions('--corr', sys.argv):

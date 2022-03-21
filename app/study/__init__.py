@@ -18,3 +18,4 @@ from .filterPriceMovement import FilterPriceMovement
 from .filterAccDis import WyckoffAccumlationDistribution
 from .filterLongCandlwWick import FilterLongWickCandle
 from .filterCenterOfControlVP import FilterCenterOfControlVP
+from .filterVolumeSpreadAnalysis import FilterVolumeSpreadAnalysis

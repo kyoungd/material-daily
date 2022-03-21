@@ -65,7 +65,8 @@ class LastNightGapper:
                 symbols = set()
                 if (isDebug):
                     print(f'filterLastnightGaopper.symbolLoop() - {lineCount}')
-        self.func(symbols)
+        if (len(symbols) > 0):
+            self.func(symbols)
 
     def Run(self):
         self.symbolLoop(self.func, self.isDebug)
