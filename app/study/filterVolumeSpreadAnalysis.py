@@ -67,7 +67,42 @@ class volumeSpreadAnalysis:
             return True
         return False
 
-    def isVsaOk(self, spreads:list, volumes:list, period:int) -> str:
+    def wyckoffDoji(self, df:pd.DataFrame, spreads:list, volumes:list, period:int) -> int:
+        rangeLength = period - 2
+        for ix in range(rangeLength):
+            s1 = spreads[ix]
+            s2 = spreads[ix+1]
+            s3 = spreads[ix+2]
+            if abs(s1) > 0.1:
+                return 0
+            if abs(s1) > abs(s2) or abs(s2) > abs(s2):
+                return 0
+            v1 = volumes[ix]
+            v2 = volumes[ix+1]
+            v3 = volumes[ix+2]
+            if abs(v1) > abs(v2) or abs(v1) > abs(v3):
+                return 0
+            c1 = df.iloc[ix].Close
+            c2 = df.iloc[ix+1].Close
+            c3 = df.iloc[ix+2].Close
+            o1 = df.iloc[ix].Open
+            o2 = df.iloc[ix+1].Open
+            o3 = df.iloc[ix+2].Open
+            if c1 >= c2 and c2 > c3 and c2 > o2 and c3 > o3:
+                h1 = df.iloc[ix].High
+                h2 = df.iloc[ix+1].High
+                h3 = df.iloc[ix+2].High
+                if h1 >= h2:
+                    return 10
+            if c1 <= c2 and c2 < c3 and c2 < o2 and o3 < c3:
+                l1 = df.iloc[ix].Low
+                l2 = df.iloc[ix+1].Low
+                l3 = df.iloc[ix+2].Low
+                if l1 <= l2:
+                    return 10
+        return 0
+
+    def isVsaOk(self, df:pd.DataFrame, spreads:list, volumes:list, period:int) -> int:
         rangeLength = period - 2
         for ix in range(rangeLength):
             s1 = spreads[ix]
@@ -101,13 +136,14 @@ class volumeSpreadAnalysis:
                 return 9
         return 0
 
-    def Run(self, symbol: str, df: pd.DataFrame):
+    def Run(self, symbol: str, df: pd.DataFrame) -> int:
         period = self.averagingBarCount
         if self.isCanCalculate(df, period):
             avgV = self.avgVolumeSwing(df)
             avgS = self.avgOpenCloseSwing(df)
             spreads, volumes = self.getVariables(df, avgS, avgV)
-            vsa = self.isVsaOk(spreads, volumes, self.barCount)
+            vsa = self.wyckoffDoji(df, spreads, volumes, self.barCount)
+            vsa = vsa if vsa > 0 else self.isVsaOk(df, spreads, volumes, self.barCount)
             return vsa
         else:
             return 0

@@ -92,7 +92,7 @@ def AppMarketOpen(isCenterOfControl=False):
 def RunApp():
     today = datetime.now()
     print(f'{today.hour} {today.minute}')
-    if today.hour == 0 and today.minute == 15:
+    if today.hour == 21 and today.minute == 5:
         AppDaily()
     elif today.hour == 5 and today.minute == 30:
         AppMarketOpen(False)
@@ -112,11 +112,11 @@ if __name__ == "__main__":
         # logging.info('----------------------> Complete filterCenterOfControlVP')
         # FilterLongWickCandle.All()
         # logging.info('----------------------> Complete FilterLongWickCandle.All')
-        # FilterVolumeSpreadAnalysis.All()
-        # logging.info('----------------------> Complete FilterVolumeSpreadAnalysis.All')
-        AppMarketOpen(True)
-        # PushToServer()
-        # logging.info('----------------------> Complete PushToServer')
+        FilterVolumeSpreadAnalysis.All()
+        logging.info('----------------------> Complete FilterVolumeSpreadAnalysis.All')
+        # AppMarketOpen(True)
+        PushToServer()
+        logging.info('----------------------> Complete PushToServer')
     elif isTagInOptions('--mo', sys.argv):
         AppMarketOpen()
     elif isTagInOptions('--corr', sys.argv):
