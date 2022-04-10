@@ -23,16 +23,16 @@ class TightMinMax:
     def getRangeMax(self, df):
         rows = []
         for _, row in df.iterrows():
-            open = row[1]['Open']
-            close = row[1]['Close']
+            open = row['Open']
+            close = row['Close']
             rows.append(open if open > close else close)
         return rows
 
     def getRangeMin(self, df):
         rows = []
         for _, row in df.iterrows():
-            open = row[1]['Open']
-            close = row[1]['Close']
+            open = row['Open']
+            close = row['Close']
             rows.append(open if open < close else close)
         return rows
 
@@ -136,7 +136,8 @@ class TightMinMax:
     @staticmethod
     def All():
         app = TightMinMax(isSaveToDb=True)
-        AllStocks.Run(app.Run, False)
+        AllStocks.RunFromDbAll(app.Run)
+        # AllStocks.Run(app.Run, False)
 
 if __name__ == '__main__':
     symbol = 'AAPL'

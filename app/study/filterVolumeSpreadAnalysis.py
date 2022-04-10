@@ -5,7 +5,6 @@ import logging
 import json
 from util import StockAnalysis, AllStocks, TightMinMax, EnvFile
 
-
 class volumeSpreadAnalysis:
     def __init__(self):
         self.barCount:int = 5
@@ -103,37 +102,52 @@ class volumeSpreadAnalysis:
         return 0
 
     def isVsaOk(self, df:pd.DataFrame, spreads:list, volumes:list, period:int) -> int:
-        rangeLength = period - 2
+        rangeLength = period - 3
         for ix in range(rangeLength):
             s1 = spreads[ix]
             s2 = spreads[ix+1]
             s3 = spreads[ix+2]
+            s4 = spreads[ix+3]
             v1 = volumes[ix]
             v2 = volumes[ix+1]
             v3 = volumes[ix+2]
+            v4 = volumes[ix+3]
             # down thrust
-            if abs(s1) < 0.2 and v1 > 5:
+            if abs(s2) < 0.2 and v2 > 3 and not self.isSameSign(s1, s2) :
                 return 1
             # selling climax
-            if abs(s1) > 3.5 and v1 > 5:
+            if abs(s2) > 3 and v2 > 3 and not self.isSameSign(s1, s2) and abs(s2) > abs(s1) :
                 return 2
-            if self.isSameSign(s1, s2):
+            if self.isSameSign(s2, s3) and not self.isSameSign(s2, s1):
                 # effort is less than result
-                if (abs(s2)*self.factor3) < abs(s1) and v2 > (v1 * self.factor3):
+                if (abs(s3)*self.factor3) < abs(s2) and v3 > (v2 * self.factor3):
                     return 3
                 # effort is more than result
-                if abs(s2) > (abs(s1) * self.factor4) and (v2 * self.factor4) < v1:
+                if abs(s3) > (abs(s2) * self.factor4) and (v3 * self.factor4) < v2:
                     return 4
-                if self.isSameSign(s2, s3):
-                    # no supply bar, pseudo down thrust, inverse downard thrust
-                    if (abs(s1) * self.factor5) < abs(s2) and (v1 * self.factor5) < v2 and (v1 * self.factor5) < v3:
-                        return 5
-            # inverse downward thrust
-            if abs(s1) < 0.2 and v1 > 4:
-                return 8
-            # failed effort selling climax
-            if abs(s2) > (abs(s3) * self.factor8) and v2 > (v3 * self.factor8) and (not self.isSameSign(s1, s2) and self.isAboutSameSize(s1, s2)):
-                return 9
+
+            if self.isSameSign(s2, s1) and self.isSameSign(s3, s2) and self.isSameSign(s4, s3):
+                # no supply bar, pseudo down thrust, inverse downard thrust
+                if (abs(s2) * self.factor5) < abs(s3) and (v2 * self.factor5) < v3 and (v2 * self.factor5) < v4:
+                    return 5
+
+            # if self.isSameSign(s1, s2):
+            #     # effort is less than result
+            #     if (abs(s2)*self.factor3) < abs(s1) and v2 > (v1 * self.factor3):
+            #         return 3
+            #     # effort is more than result
+            #     if abs(s2) > (abs(s1) * self.factor4) and (v2 * self.factor4) < v1:
+            #         return 4
+            #     if self.isSameSign(s2, s3):
+            #         # no supply bar, pseudo down thrust, inverse downard thrust
+            #         if (abs(s1) * self.factor5) < abs(s2) and (v1 * self.factor5) < v2 and (v1 * self.factor5) < v3:
+            #             return 5
+            # # inverse downward thrust
+            # if abs(s1) < 0.2 and v1 > 4:
+            #     return 8
+            # # failed effort selling climax
+            # if abs(s2) > (abs(s3) * self.factor8) and v2 > (v3 * self.factor8) and (not self.isSameSign(s1, s2) and self.isAboutSameSize(s1, s2)):
+            #     return 9
         return 0
 
     def Run(self, symbol: str, df: pd.DataFrame) -> int:

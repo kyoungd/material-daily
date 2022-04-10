@@ -4,6 +4,7 @@ import os
 import logging
 from .environ import EnvFile
 
+
 def PushToServer(dest = None):
     logging.info('start push.')
     url = EnvFile.Get(

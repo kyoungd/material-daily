@@ -33,6 +33,43 @@ class engulfingCandle:
         return result
 
 
+class starCandle:
+    def __init__(self, symbol:str, df:pd.DataFrame):
+        data = df.loc[0:4]
+        self.data = data[::-1]
+        self.symbol = symbol
+
+    def CDLEVENINGDOJISTAR(self, df):
+        res = talib.CDLEVENINGDOJISTAR(
+            df.Open.values, df.High.values, df.Low.values, df.Close.values)
+        return res
+    
+    def CDLEVENINGSTAR(self, df):
+        res = talib.CDLEVENINGSTAR(
+            df.Open.values, df.High.values, df.Low.values, df.Close.values)
+        return res
+
+    def CDLMORNINGDOJISTAR(self, df):
+        res = talib.CDLMORNINGDOJISTAR(
+            df.Open.values, df.High.values, df.Low.values, df.Close.values)
+        return res
+
+    def CDLMORNINGSTAR(self, df):
+        res = talib.CDLMORNINGSTAR(
+            df.Open.values, df.High.values, df.Low.values, df.Close.values)
+        return res
+
+    def run(self):
+        try:
+            step1 = self.CDLEVENINGDOJISTAR(self.data)
+            step2 = self.CDLEVENINGSTAR(self.data)
+            step3 = self.CDLMORNINGDOJISTAR(self.data)
+            step4 = self.CDLMORNINGSTAR(self.data)
+            return sum(step1) + sum(step2) + sum(step3) + sum(step4)
+        except Exception as e:
+            logging.error(f'filterCandlePattern.starPattern.run: {self.symbol} - {e}')
+            return 0
+
 class FilterCandlePattern:
     def __init__(self):
         self.minEngulfingCandleChangePercent = float(
@@ -47,10 +84,14 @@ class FilterCandlePattern:
         if isLoaded:
             try:
                 filterEngulf = engulfingCandle(df, self.minEngulfingCandleChangePercent, self.minEngulfingCandleChangevalue)
+                filterStar = starCandle(symbol, df)
                 engulf = filterEngulf.run()
+                star = filterStar.run()
                 self.sa.UpdateFilter(self.data, symbol, 'engulf', engulf)
+                self.sa.UpdateFilter(self.data, symbol, 'st', True if star > 0 else False)
             except Exception as e:
                 self.sa.UpdateFilter(self.data, symbol, 'engulf', False)
+                self.sa.UpdateFilter(self.data, symbol, 'st', False)
                 logging.error(f'filterCandlePattern.Run: {symbol} - {e}')
                 print(f'filterCandlePattern.Run: {symbol} - {e}')
         return False
@@ -61,5 +102,14 @@ class FilterCandlePattern:
         AllStocks.Run(filter.Run, False)
         filter.sa.WriteJson(filter.data)
 
+    @staticmethod
+    def Test():
+        symbol = 'TSLA'
+        isLoaded, df = AllStocks.GetDailyStockData(symbol)
+        if isLoaded:
+            filter = starCandle(symbol, df)
+            result = filter.run()
+            print(result)
+
 if __name__ == '__main__':
-    FilterCandlePattern.All()
+    pass

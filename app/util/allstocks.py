@@ -1,10 +1,40 @@
+from requests.structures import CaseInsensitiveDict
 import pandas as pd
 import os
 import logging
+import requests
 from .environ import EnvFile
 from dbase import MarketDataDb
 
+
 class AllStocks:
+    favorites:dict = {}
+
+    @staticmethod
+    def DownloadFavorites():
+        # call rest api http get with bearer token and request.get
+        try:
+            url:token = EnvFile.Get("URL_GET_ALL_FAVORITES", "https://simp-admin.herokuapp.com/api/favorites")
+            token:str = EnvFile.Get("ADMIN_SYSOPS_TOKEN", "")
+            headers = CaseInsensitiveDict()
+            headers["Accept"] = "application/json"
+            headers["Authorization"] = f"Bearer {token}"
+            resp = requests.get(url, headers=headers)
+            if resp.status_code == 200:
+                result = resp.json()
+                AllStocks.favorites = result["data"]["attributes"]
+                logging.info("Downloaded all favorites ")
+            else:
+                logging.error(f"Error downloading favorites {resp.status_code}")
+        except Exception as e:
+            print(f'allstocks.RunFromFile() failed - {e}')
+            logging.error(f'allstocks.RunFromFile() failed - {e}')
+
+    @staticmethod
+    def IsFavorite(symbol):
+        if symbol in AllStocks.favorites:
+            return True
+        return False
 
     @staticmethod
     def RunFromFile(func, isSymbolsRewrite=False, filename=None):
@@ -33,17 +63,23 @@ class AllStocks:
     @staticmethod
     def RunFromDb(func):
         try:
-            symbolFilterVolatility01 = float(EnvFile.Get('SYMBOL_FILTER_VOLATILITY_01', 10))
-            symbolFilterVolatility03 = float(EnvFile.Get('SYMBOL_FILTER_VOLATILITY_03', 15))
+            symbolFilterVolatility01 = float(
+                EnvFile.Get('SYMBOL_FILTER_VOLATILITY_01', 10))
+            symbolFilterVolatility03 = float(
+                EnvFile.Get('SYMBOL_FILTER_VOLATILITY_03', 15))
             symbolFilterVolatility30 = float(
                 EnvFile.Get('SYMBOL_FILTER_VOLATILITY_30', 20))
 
             db = MarketDataDb()
             query = """SELECT symbol FROM public.market_data WHERE timeframe='1Day' AND NOT is_deleted AND (volatility01>=%s OR volatility03>=%s OR volatility30>=%s)"""
-            isOk, result = db.SelectQuery(query, (symbolFilterVolatility01, symbolFilterVolatility03, symbolFilterVolatility30))
+            isOk, result = db.SelectQuery(
+                query, (symbolFilterVolatility01, symbolFilterVolatility03, symbolFilterVolatility30))
             symbols = result
             for row in symbols:
-                symbol = row[0]
+                if not AllStocks.IsFavorite(row[0]):
+                    symbol = row[0]
+                    func(symbol)
+            for symbol in AllStocks.favorites.keys():
                 func(symbol)
         except Exception as e:
             print(f'allstocks.RunFromDb() failed - {e}')

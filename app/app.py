@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 from datetime import datetime
 from alpaca import *
-from util import PushToServer, SetInterval, TightMinMax, ProductionAssetDataSync
+from util import *
 from study import *
 from dbase import *
 from correlate import *
@@ -20,6 +20,8 @@ def AppDaily():
     logging.info('----------------------> Complete YahooDaily.All')
     AlpacaCrypto.All()
     logging.info('----------------------> Complete AlpacaCrypto.All')
+    AllStocks.DownloadFavorites()
+    logging.info('----------------------> Complete AllStocks.DownloadFavorites')
     FilterPriceMovement.All(isSaveToDb=True)
     logging.info('----------------------> Complete FilterPriceMovement.All')
     TightMinMax.All()
@@ -92,7 +94,7 @@ def AppMarketOpen(isCenterOfControl=False):
 def RunApp():
     today = datetime.now()
     print(f'{today.hour} {today.minute}')
-    if today.hour == 21 and today.minute == 5:
+    if today.hour == 21 and today.minute == 35:
         AppDaily()
     elif today.hour == 5 and today.minute == 30:
         AppMarketOpen(False)
@@ -108,15 +110,9 @@ if __name__ == "__main__":
     logging.info("APP.PY Started")
 
     if isTagInOptions('--test', sys.argv):
-        # FilterCenterOfControlVP.All(False)
-        # logging.info('----------------------> Complete filterCenterOfControlVP')
-        # FilterLongWickCandle.All()
-        # logging.info('----------------------> Complete FilterLongWickCandle.All')
+        # AllStocks.DownloadFavorites()
+        # AllStocks.RunFromDb(print)
         FilterVolumeSpreadAnalysis.All()
-        logging.info('----------------------> Complete FilterVolumeSpreadAnalysis.All')
-        # AppMarketOpen(True)
-        PushToServer()
-        logging.info('----------------------> Complete PushToServer')
     elif isTagInOptions('--mo', sys.argv):
         AppMarketOpen()
     elif isTagInOptions('--corr', sys.argv):
