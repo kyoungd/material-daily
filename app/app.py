@@ -94,7 +94,7 @@ def AppMarketOpen(isCenterOfControl=False):
 def RunApp():
     today = datetime.now()
     print(f'{today.hour} {today.minute}')
-    if today.hour == 21 and today.minute == 35:
+    if today.hour == 21 and today.minute == 30:
         AppDaily()
     elif today.hour == 5 and today.minute == 30:
         AppMarketOpen(False)
@@ -110,9 +110,8 @@ if __name__ == "__main__":
     logging.info("APP.PY Started")
 
     if isTagInOptions('--test', sys.argv):
-        # AllStocks.DownloadFavorites()
-        # AllStocks.RunFromDb(print)
-        FilterVolumeSpreadAnalysis.All()
+        FilterPriceMovement.All(isSaveToDb=False)
+        logging.info('----------------------> Complete FilterPriceMovement.All')
     elif isTagInOptions('--mo', sys.argv):
         AppMarketOpen()
     elif isTagInOptions('--corr', sys.argv):

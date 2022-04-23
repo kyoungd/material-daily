@@ -166,7 +166,6 @@ class MarketDataDb:
                 if '.' in symbol:
                     continue
                 else:
-                    logging.info(f'MarketDataDb.StockSymbols() - {symbol}')
                     isExist, _ = self.ReadMarket(symbol, datatype=datatype)
                     if isExist:
                         existingSymbols.append(symbol)
@@ -175,7 +174,7 @@ class MarketDataDb:
                         self.WriteMarket(symbol, {}, datatype=datatype, name=name)
                         newSymbols.append(symbol)
             except (Exception, psycopg2.DatabaseError) as error:
-                logging.error(f'MarketDataDb.StockSymbols() - {error}')
+                logging.error(f'MarketDataDb.StockSymbols() - {line} : {error}')
                 print(f'SockSymbols() - {error}')
         return newSymbols, existingSymbols
 

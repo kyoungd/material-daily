@@ -9,8 +9,8 @@ class volumeSpreadAnalysis:
     def __init__(self):
         self.barCount:int = 5
         self.averagingBarCount:int = 20
-        self.factor3 = 1.8
-        self.factor4 = 1.8
+        self.factor3 = 1.2
+        self.factor4 = 1.2
         self.factor5 = 1.8
         self.factor8 = 1.8
 
@@ -66,6 +66,20 @@ class volumeSpreadAnalysis:
             return True
         return False
 
+    def localMinMax(self, df: pd.DataFrame, index: int, barCount=None):
+        barCount = 15 if barCount is None else barCount
+        localMin = min(df.iloc[index]['Close'], df.iloc[index]['Open'])
+        localMax = max(df.iloc[index]['Close'], df.iloc[index]['Open'])
+        lowCount = 0
+        highCount = 0
+        for ix in range(index, barCount + index):
+            row = df.iloc[ix]
+            if row['Close'] <= localMin or row['Open'] <= localMin:
+                lowCount += 1
+            if row['Close'] >= localMax or row['Open'] >= localMax:
+                highCount +=1
+        return False if lowCount >= barCount-1 or highCount >= barCount + 1 else True
+
     def wyckoffDoji(self, df:pd.DataFrame, spreads:list, volumes:list, period:int) -> int:
         rangeLength = period - 2
         for ix in range(rangeLength):
@@ -91,13 +105,13 @@ class volumeSpreadAnalysis:
                 h1 = df.iloc[ix].High
                 h2 = df.iloc[ix+1].High
                 h3 = df.iloc[ix+2].High
-                if h1 >= h2:
+                if h1 >= h2 and self.localMinMax(df, ix):
                     return 10
             if c1 <= c2 and c2 < c3 and c2 < o2 and o3 < c3:
                 l1 = df.iloc[ix].Low
                 l2 = df.iloc[ix+1].Low
                 l3 = df.iloc[ix+2].Low
-                if l1 <= l2:
+                if l1 <= l2 and self.localMinMax(df, ix):
                     return 10
         return 0
 
@@ -114,22 +128,25 @@ class volumeSpreadAnalysis:
             v4 = volumes[ix+3]
             # down thrust
             if abs(s2) < 0.2 and v2 > 3 and not self.isSameSign(s1, s2) :
-                return 1
+                if self.localMinMax(df, ix):
+                    return 1
             # selling climax
             if abs(s2) > 3 and v2 > 3 and not self.isSameSign(s1, s2) and abs(s2) > abs(s1) :
-                return 2
-            if self.isSameSign(s2, s3) and not self.isSameSign(s2, s1):
+                if self.localMinMax(df, ix):
+                    return 2
+            if self.isSameSign(s4, s3) and self.isSameSign(s2, s3) and not self.isSameSign(s2, s1):
                 # effort is less than result
-                if (abs(s3)*self.factor3) < abs(s2) and v3 > (v2 * self.factor3):
+                if (abs(s4) < abs(s3) < abs(s2)) and (v4 > v3 > v2):
                     return 3
                 # effort is more than result
-                if abs(s3) > (abs(s2) * self.factor4) and (v3 * self.factor4) < v2:
+                if (abs(s4) > abs(s3) > abs(s2)) and (v4 < v3 < v2):
                     return 4
 
             if self.isSameSign(s2, s1) and self.isSameSign(s3, s2) and self.isSameSign(s4, s3):
                 # no supply bar, pseudo down thrust, inverse downard thrust
                 if (abs(s2) * self.factor5) < abs(s3) and (v2 * self.factor5) < v3 and (v2 * self.factor5) < v4:
-                    return 5
+                    if self.localMinMax(df, ix, 10):
+                        return 5
 
             # if self.isSameSign(s1, s2):
             #     # effort is less than result
@@ -156,8 +173,9 @@ class volumeSpreadAnalysis:
             avgV = self.avgVolumeSwing(df)
             avgS = self.avgOpenCloseSwing(df)
             spreads, volumes = self.getVariables(df, avgS, avgV)
-            vsa = self.wyckoffDoji(df, spreads, volumes, self.barCount)
-            vsa = vsa if vsa > 0 else self.isVsaOk(df, spreads, volumes, self.barCount)
+            vsa = self.isVsaOk(df, spreads, volumes, self.barCount)
+            vsa = vsa if vsa > 0 else self.wyckoffDoji(
+                df, spreads, volumes, self.barCount)
             return vsa
         else:
             return 0

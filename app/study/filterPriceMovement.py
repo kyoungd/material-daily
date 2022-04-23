@@ -60,7 +60,7 @@ class FilterPriceMovement:
 
     def Run(self, symbol: str):
         isLoaded, df = AllStocks.GetDailyStockData(symbol)
-        if isLoaded:
+        if isLoaded and len(df) > 0:
             try:
                 value = self.priceMovement(df)
                 if self.isSaveToDb:
@@ -74,6 +74,11 @@ class FilterPriceMovement:
                     self.writeToDbZero(symbol)
                 else:
                     self.sa.UpdateFilter(self.jsonData, symbol, 'pm', 0)
+        else:
+            if self.isSaveToDb:
+                self.writeToDbZero(symbol)
+            else:
+                self.sa.UpdateFilter(self.jsonData, symbol, 'pm', 0)
         return isLoaded
 
     @staticmethod

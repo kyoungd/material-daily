@@ -19,9 +19,10 @@ class FilterCenterOfControlVP:
         data = self.jsonData
         symbols = []
         for key in data:
-            gap = data[key]['ogap']
-            if gap > self.minRange and gap < self.maxRange:
-                symbols.append({ 'symbol': key, 'og': gap })
+            if 'ogap' in data[key]:
+                gap = data[key]['ogap']
+                if self.maxRange > gap > self.minRange:
+                    symbols.append({ 'symbol': key, 'og': gap })
         return symbols
 
     def Get1MinuteData(self, symbol:str) -> pd.DataFrame:
