@@ -10,16 +10,16 @@ from . import config
 class MarketDataDb:
     connection = None
 
-    def __init__(self):
+    def __init__(self, filename=None):
         if MarketDataDb.connection is None:
-            MarketDataDb.connection = self.db_connection()
+            MarketDataDb.connection = self.db_connection(filename=filename)
         self.conn = MarketDataDb.connection
 
-    def db_connection(self):
+    def db_connection(self, filename=None):
         conn = None
         try:
             # read connection parameters
-            params = config()
+            params = config(filename=filename)
             # connect to the PostgreSQL server
             print('Connecting to the PostgreSQL database...')
             conn = psycopg2.connect(**params)
@@ -100,9 +100,25 @@ class MarketDataDb:
     #         print(error)
     #         return False, None
 
-    def AppendMarket(self, symbol: str, newdata:dict, datatype:str=None, timeframe:str=None, name:str=None) -> bool:
+    def MergeData(self, timeframe: str,  data: list):
+        if timeframe == RedisTimeFrame.DAILY:
+            result = []
+            lastdate = None
+            for row in data:
+                rowdate = row['t'].split('T')[0] + 'T00:00:00Z'
+                if lastdate is None:
+                    result.append(row)
+                    lastdate = rowdate
+                elif rowdate != lastdate:
+                    result.append(row)
+                    lastdate = rowdate
+            return result
+        return data
+
+    def AppendMarket(self, symbol: str, datalist:dict, datatype:str=None, timeframe:str=None, name:str=None) -> bool:
         # logging.info(f'MarketDataDb.AppendMarket() - {symbol}')
         try:
+            newdata = self.MergeData(timeframe, datalist)
             isOk, result = self.ReadMarket(symbol, datatype=datatype, timeframe=timeframe)
             if isOk:
                 data = result[0]
@@ -123,8 +139,9 @@ class MarketDataDb:
             print(error)
             return False
 
-    def WriteMarket(self, symbol: str, data:list, datatype:str=None, timeframe:str=None, name:str=None) -> bool:
+    def WriteMarket(self, symbol: str, datalist:list, datatype:str=None, timeframe:str=None, name:str=None) -> bool:
         try:
+            data = self.MergeData(timeframe, datalist)
             cur = self.conn.cursor()
             timeframe = RedisTimeFrame.DAILY if timeframe is None else timeframe
             datatext = json.dumps(data)
@@ -208,3 +225,14 @@ class MarketDataDb:
             print(error)
             return False
 
+    def ResetMarketDataTable(self) -> bool:
+        try:
+            cur = self.conn.cursor()
+            sql = """DELETE FROM public.market_data"""
+            cur.execute(sql, ())
+            self.conn.commit()
+            return True
+        except (Exception, psycopg2.DatabaseError) as error:
+            logging.error(f'MarketDataDb.WriteMarket() - {error}')
+            print(error)
+            return False

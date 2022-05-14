@@ -11,6 +11,16 @@ if [ $1 == '--daily' ]; then
     cp ./data/basic/symbols-empty.json ./data/symbols.json
 fi
 
+if [ $1 == '--reset' ]; then
+    echo '---------------------- CLEAR STAT ----------------------'
+    rm ./analyzer.log
+    rm ./data/stocks/*.csv
+    rm ./data/bak/*.csv
+    rm ./data/bak/*.json
+    rm ./data/symbols.json
+    cp ./data/basic/symbols-empty.json ./data/symbols.json
+fi
+
 if [ $1 == '--corr' ]; then
     echo '---------------------- CLEAR STAT ----------------------'
     rm ./data/corr*.json

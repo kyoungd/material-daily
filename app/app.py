@@ -91,10 +91,16 @@ def AppMarketOpen(isCenterOfControl=False):
     PushToServer()
     logging.info('----------------------> Complete PushToServer')
 
+
+def AppDeleteMarketDataTable():
+    app = MarketDataDb()
+    app.ResetMarketDataTable()
+
+
 def RunApp():
     today = datetime.now()
     print(f'{today.hour} {today.minute}')
-    if today.hour == 21 and today.minute == 30:
+    if today.hour == 21 and today.minute == 15:
         AppDaily()
     elif today.hour == 5 and today.minute == 30:
         AppMarketOpen(False)
@@ -110,8 +116,11 @@ if __name__ == "__main__":
     logging.info("APP.PY Started")
 
     if isTagInOptions('--test', sys.argv):
-        FilterPriceMovement.All(isSaveToDb=False)
-        logging.info('----------------------> Complete FilterPriceMovement.All')
+        AppDeleteMarketDataTable()
+        AppDaily()
+    elif isTagInOptions('--reset', ):
+        AppDeleteMarketDataTable()
+        AppDaily()
     elif isTagInOptions('--mo', sys.argv):
         AppMarketOpen()
     elif isTagInOptions('--corr', sys.argv):
@@ -120,9 +129,6 @@ if __name__ == "__main__":
         AppDaily()
     elif isTagInOptions('--fin', sys.argv):
         StockFinancial.All(isDebug=True, isForceDl=True)
-    elif isTagInOptions('--tt', sys.argv):
-        FilterCorrelate.All()
-        # PushToServer()
     else:
         SetInterval(60, RunApp)
 

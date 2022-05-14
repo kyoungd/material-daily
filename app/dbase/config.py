@@ -17,7 +17,8 @@ def configWithEnvironmentVariables(db):
     return db
 
 
-def config(filename='./app/dbase/database.ini', section='postgresql'):
+def config(filename=None, section='postgresql'):
+    filename = './app/dbase/database.ini' if filename is None else filename
     # create a parser
     parser = ConfigParser()
     # read config file
