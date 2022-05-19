@@ -41,8 +41,8 @@ def AppDaily():
     # FilterRelativeVolume.All()
     logging.info('----------------------> Complete FilterRelativeVolume.All')
     FilterVolumeProfile.All()
-    # logging.info('----------------------> Complete FilterVolumeProfile.All')
-    # FilterGapper.All()
+    logging.info('----------------------> Complete FilterVolumeProfile.All')
+    FilterGapper.All()
     logging.info('----------------------> Complete FilterGapper.All')
     FilterCandlePattern.All()
     logging.info('----------------------> Complete FilterCandlePattern.All')
@@ -115,10 +115,12 @@ if __name__ == "__main__":
                         datefmt='%d-%b-%y %H:%M:%S', filename="analyzer.log")
     logging.info("APP.PY Started")
 
-    if isTagInOptions('--test', sys.argv):
-        AppDeleteMarketDataTable()
-        AppDaily()
-    elif isTagInOptions('--reset', ):
+    if isTagInOptions('--test', sys.argv):        
+        FilterGapper.All()
+        logging.info('----------------------> Complete FilterGapper.All')
+        PushToServer()
+        logging.info('----------------------> Complete PushToServer')
+    elif isTagInOptions('--reset', sys.argv):
         AppDeleteMarketDataTable()
         AppDaily()
     elif isTagInOptions('--mo', sys.argv):

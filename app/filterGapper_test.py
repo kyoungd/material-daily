@@ -1,7 +1,9 @@
 from unittest import mock, TestCase
+from datetime import date
 from study import FilterGapper
 import pandas as pd
-
+from util import UtilTest
+from alpaca import AlpacaHistoricalBarData
 
 class TestFilterGappers(TestCase):
 
@@ -83,3 +85,24 @@ class TestFilterGappers(TestCase):
         # gapUp = filter.gapUpNearClose(gapUp, 101)
         # gapUp = filter.gapUpPriceMovementCheck(gapUp, df)
         # self.assertEqual(len(gapUp), 0)
+
+
+class TestFilterRealtimeGap(TestCase):
+
+    def getRealtimeData(self, symbol: str, startdate: str, enddate: str = None, timeframe: str = None):
+        timeframe = '1Day' if timeframe is None else timeframe
+        enddate = date.today().strftime("20%y-%m-%d") if enddate is None else timeframe
+        app = AlpacaHistoricalBarData(symbol, startdate, enddate, timeframe)
+        return app.GetDataFrame()
+
+    def testPriceGap_real_01(self):
+        symbol = 'U'
+        startdate = '2001-06-01'
+        isOk, df = self.getRealtimeData(symbol, startdate)
+        self.assertTrue(isOk)
+        close = df.iloc[0].Close
+        filter = FilterGapper()
+        _, gapDown = filter.filterOn(df)
+        gapDown = filter.gapDownNearClose(gapDown, close)
+        gapDown = filter.gapDownPriceMovementCheck(gapDown, df)
+        self.assertEqual(len(gapDown), 1)

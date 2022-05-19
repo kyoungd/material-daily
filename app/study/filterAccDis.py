@@ -84,3 +84,12 @@ class WyckoffAccumlationDistribution:
             logging.error(f'WyckoffAccumlationDistribution.Run: {symbol} - {e}')
             print(f'WyckoffAccumlationDistribution.Run: {symbol} - {e}')
             return False
+
+
+    def RunWickoff(self, symbol:str, dataf:pd.DataFrame):
+        df = dataf[::-1]
+        df.reset_index()
+        data = WyckoffAccumlationDistribution.get_ci(
+            df['High'], df['Low'], df['Close'], self.lookback)
+        data = data.dropna()
+        

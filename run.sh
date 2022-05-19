@@ -1,5 +1,5 @@
 echo '---------------------- STARTING ----------------------'
-cd /home/young/Desktop/code/trading/candlestick-pattern-analyzer
+cd /home/young/Desktop/code/trading/material-daily
 
 if [ $1 == '--daily' ]; then
     echo '---------------------- CLEAR STAT ----------------------'

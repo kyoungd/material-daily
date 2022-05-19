@@ -9,7 +9,7 @@ class JsonFavorite:
         filename = 'favorites.json' if filename == None else filename
         self.userId = userId
         folderPath = EnvFile.Get('DATA_FOLDER_PATH', 
-            '/home/young/Desktop/code/trading/candlestick-pattern-analyzer/data')
+            '/home/young/Desktop/code/trading/material-daily/data')
         self.filename = f'{folderPath}/{filename}' if userId is None else f'{folderPath}/{userId}/{filename}'
         self.data = self.readJson() if readJsonFile else {}
 
