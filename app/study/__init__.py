@@ -12,10 +12,11 @@ from .filterGappper import FilterGapper
 from .filterCandlePattern import FilterCandlePattern
 from .filterDoubleTop import FilterDoubleTop, doubleTop
 from .filterTrend import FilterTrends, trendMinMax
-from .filterRsiDivergence import FilterRsiDivergence
+from .filterRsiDivergence import FilterRsiDivergence, rsiDivergence
 from .filterCorrelate import FilterCorrelate
 from .filterPriceMovement import FilterPriceMovement
 from .filterAccDis import WyckoffAccumlationDistribution
 from .filterLongCandlwWick import FilterLongWickCandle
 from .filterCenterOfControlVP import FilterCenterOfControlVP
 from .filterVolumeSpreadAnalysis import FilterVolumeSpreadAnalysis
+from .filterWyckoff import WyckoffMethod

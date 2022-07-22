@@ -1,4 +1,6 @@
 import sys
+import os
+import getopt
 import logging
 import pandas as pd
 from datetime import datetime
@@ -96,11 +98,20 @@ def AppDeleteMarketDataTable():
     app = MarketDataDb()
     app.ResetMarketDataTable()
 
+def DeleteDailyFiles():
+    os.system('rm ./analyzer.log')
+    os.system('rm ./data/stocks/*.csv')
+    os.system('rm ./data/bak/*.csv')
+    os.system('rm ./data/bak/*.json')
+    os.system('rm ./data/symbols.json')
+    os.system('cp ./data/basic/symbols-empty.json ./data/symbols.json')
+
 
 def RunApp():
     today = datetime.now()
     print(f'{today.hour} {today.minute}')
     if today.hour == 21 and today.minute == 15:
+        DeleteDailyFiles()
         AppDaily()
     elif today.hour == 5 and today.minute == 30:
         AppMarketOpen(False)
@@ -115,24 +126,48 @@ if __name__ == "__main__":
                         datefmt='%d-%b-%y %H:%M:%S', filename="analyzer.log")
     logging.info("APP.PY Started")
 
-    if isTagInOptions('--test', sys.argv):        
-        FilterGapper.All()
-        logging.info('----------------------> Complete FilterGapper.All')
-        PushToServer()
-        logging.info('----------------------> Complete PushToServer')
-    elif isTagInOptions('--reset', sys.argv):
-        AppDeleteMarketDataTable()
-        AppDaily()
-    elif isTagInOptions('--mo', sys.argv):
-        AppMarketOpen()
-    elif isTagInOptions('--corr', sys.argv):
-        AppCorrelation()
-    elif isTagInOptions('--day', sys.argv):
-        AppDaily()
-    elif isTagInOptions('--fin', sys.argv):
-        StockFinancial.All(isDebug=True, isForceDl=True)
-    else:
-        SetInterval(60, RunApp)
+    opts, args = getopt.getopt(sys.argv[1:], 'trmcdf', [
+                            'test', 'run', 'marketopen', 'marketclose', 'daily', 'day', 'fin'])
+    for opt, arg in opts:
+        if opt == '--test':
+            FilterRsiDivergence.All()
+            logging.info(
+                '----------------------> Complete FilterRsiDivergence.All')
+            PushToServer()
+            logging.info('----------------------> Complete PushToServer')
+        elif opt == '--reset':
+            AppDeleteMarketDataTable()
+            AppDaily()
+        elif opt == '--mo':
+            AppMarketOpen()
+        elif opt == '--corr':
+            AppCorrelation()
+        elif opt == '--day':
+            DeleteDailyFiles()
+            AppDaily()
+        elif opt == '--fin':
+            StockFinancial.All(isDebug=True, isForceDl=True)
+        else:
+            SetInterval(60, RunApp)
+
+    # if isTagInOptions('--test', sys.argv):        
+    #     FilterRsiDivergence.All()
+    #     logging.info('----------------------> Complete FilterRsiDivergence.All')
+    #     PushToServer()
+    #     logging.info('----------------------> Complete PushToServer')
+    # elif isTagInOptions('--reset', sys.argv):
+    #     AppDeleteMarketDataTable()
+    #     AppDaily()
+    # elif isTagInOptions('--mo', sys.argv):
+    #     AppMarketOpen()
+    # elif isTagInOptions('--corr', sys.argv):
+    #     AppCorrelation()
+    # elif isTagInOptions('--day', sys.argv):
+    #     AppDaily()
+    # elif isTagInOptions('--fin', sys.argv):
+    #     StockFinancial.All(isDebug=True, isForceDl=True)
+    # else:
+    #     SetInterval(60, RunApp)
 
     # db = SecDb()
     # db.SetLastDaily('AAPL', 170.33, '2020-01-28')

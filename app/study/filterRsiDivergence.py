@@ -35,10 +35,16 @@ class rsiDivergence:
             df if len(df) < 30 else df[0:30], colName='Close', tightMinMaxN=4)
         return app.Run()
 
+    def highEnoughRsi(self, dfRsi:pd.DataFrame):
+        for _, row in dfRsi.iterrows():
+            if row.Rsi > 70 or row.Rsi < 30:
+                return True
+        return False
+    
     def Run(self, df:pd.DataFrame):
         isFirstMinRsi, dfRsi = self.getRsiMinMax(df)
         firstRsi = dfRsi.iloc[0]['Rsi']
-        if 70 > firstRsi > 30:
+        if not self.highEnoughRsi(dfRsi):
             return False
         isFirstMinClose, dfClose = self.getMinMax(df)
         date1 = datetime.strptime(dfRsi.iloc[0].Date.split('T')[0], '%Y-%m-%d')
@@ -46,7 +52,7 @@ class rsiDivergence:
             dfClose.iloc[0].Date.split('T')[0], '%Y-%m-%d')
         delta = date1 - date2
         print(delta.days)
-        if 5 >= abs(delta.days):
+        if self.maxDays >= abs(delta.days):
             if len(dfRsi) >= 3 and len(dfClose) >= 3:
                 m1 = self.slope(0, dfRsi.iloc[2].Rsi, 1, dfRsi.iloc[0].Rsi)
                 m2 = self.slope(0, dfClose.iloc[2].Close, 1, dfClose.iloc[0].Close)

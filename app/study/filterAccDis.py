@@ -12,7 +12,7 @@ class WyckoffAccumlationDistribution:
         self.barCountDistribution = 3
         self.barCountVolClimaxRebound = 2
         self.barCountAccumulation = 7
-        self.minVolumeClimax = 5.0  # minimum volume climax - 600%
+        self.minVolumeClimax = 2.0  # minimum volume climax - 200%
         self.isConsolidating = 61.8
         self.isTrending = 38.2
 
@@ -84,12 +84,3 @@ class WyckoffAccumlationDistribution:
             logging.error(f'WyckoffAccumlationDistribution.Run: {symbol} - {e}')
             print(f'WyckoffAccumlationDistribution.Run: {symbol} - {e}')
             return False
-
-
-    def RunWickoff(self, symbol:str, dataf:pd.DataFrame):
-        df = dataf[::-1]
-        df.reset_index()
-        data = WyckoffAccumlationDistribution.get_ci(
-            df['High'], df['Low'], df['Close'], self.lookback)
-        data = data.dropna()
-        
