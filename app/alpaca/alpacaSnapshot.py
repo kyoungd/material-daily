@@ -2,6 +2,7 @@
 from alpaca_trade_api.rest import REST, TimeFrame
 from enum import Enum
 import requests
+from sympy import EX
 from util import AlpacaAccess, JsonFavorite, EnvFile
 import logging
 import json
@@ -181,6 +182,20 @@ class AlpacaSnapshots:
         app.Run(None, isDebug)
         print('done - alpaanapshot.py')
 
+    @staticmethod
+    def LastProcessDate():
+        app = AlpacaSnapshots()
+        snapshots = app.downloadSnapshotBatch(['AAPL', 'MSFT'])
+        for symbol in snapshots:
+            try:
+                datetimeStr = snapshots[symbol]['dailyBar']['t']
+                dateStr = datetimeStr.split('T')[0]
+                return dateStr
+            except Exception as e:
+                logging.error(f'AlpacaSnapshot.LastProcessDate(). ERROR: {e}')
+                print('AlpacaSnapshot.LastProcessDate(). ERROR: {}'.format(str(e)))
+                return None
+
 if __name__ == "__main__":
     # timeframe = RedisTimeFrame.DAILY
     # symbol = "AAPL"
@@ -188,6 +203,6 @@ if __name__ == "__main__":
     # data = app.HistoricalPrices(symbol, timeframe)
     # app.WriteToFile(symbol, data)
     #
-    AlpacaAccess.All(True)
+    # AlpacaAccess.All(True)
     #
     print('done')

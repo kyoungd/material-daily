@@ -2,23 +2,13 @@ echo '---------------------- STARTING ----------------------'
 cd /home/young/Desktop/code/trading/material-daily
 
 if [ $1 == '--daily' ]; then
-    echo '---------------------- CLEAR STAT ----------------------'
-    rm ./analyzer.log
-    rm ./data/stocks/*.csv
-    rm ./data/bak/*.csv
-    rm ./data/bak/*.json
-    rm ./data/symbols.json
-    cp ./data/basic/symbols-empty.json ./data/symbols.json
-fi
-
-if [ $1 == '--reset' ]; then
-    echo '---------------------- CLEAR STAT ----------------------'
-    rm ./analyzer.log
-    rm ./data/stocks/*.csv
-    rm ./data/bak/*.csv
-    rm ./data/bak/*.json
-    rm ./data/symbols.json
-    cp ./data/basic/symbols-empty.json ./data/symbols.json
+    echo '---------------------- START DAILY ROUTINE ----------------------'
+    # rm ./analyzer.log
+    # rm ./data/stocks/*.csv
+    # rm ./data/bak/*.csv
+    # rm ./data/bak/*.json
+    # rm ./data/symbols.json
+    # cp ./data/basic/symbols-empty.json ./data/symbols.json
 fi
 
 if [ $1 == '--corr' ]; then

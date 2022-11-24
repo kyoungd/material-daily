@@ -7,7 +7,18 @@ def GetHisotricalCommodities(symbol):
     # show actions (dividends, splits)
     stock.actions
 
+    print(stock.info['sector'])
+    print(stock.info['industry'])
+    print(stock.info['close'])
     result = []
+    result.add({
+        'symbol': stock.info['symbol'], 
+        'sector': stock.info['sector'], 
+        'industry': stock.info['industry'], 
+        'close': stock.info['close'],
+        'volume': stock.info['volume'],
+        })
+    
     for _, row in hist.iterrows():
         print(str(row.name))
         result.append({'t': str(row.name), 'o': row.Open, 'h': row.High, 'l': row.Low, 'c': row.Close, 'v': row.Volume})
@@ -21,10 +32,10 @@ def GetSnapshotCommodities(symbol):
         return {'t': str(row.name), 'o': row.Open, 'h': row.High, 'l': row.Low, 'c': row.Close, 'v': row.Volume}
 
 
-historicals = GetHisotricalCommodities('GC=F')
+historicals = GetHisotricalCommodities('MSFT')
 print(historicals)
 print('-----------------------------------------------------')
-snapshot = GetSnapshotCommodities('GC=F')
+snapshot = GetSnapshotCommodities('MSFT')
 print(snapshot)
 print('done')
 

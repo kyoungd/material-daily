@@ -41,6 +41,10 @@ class JsonFavorite:
                 f'JsonFavorite.WriteJson Error Writing json file: {self.filename} {e}')
             raise Exception(e)
 
+    def IsFileExists(self):
+        return os.path.exists(self.filename)
+
     def EmptyJson(self):
         self.data = {}
         self.WriteJson()
+

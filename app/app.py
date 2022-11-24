@@ -4,6 +4,8 @@ import getopt
 import logging
 import pandas as pd
 from datetime import datetime
+
+from tensorflow_hub import LatestModuleExporter
 from alpaca import *
 from util import *
 from study import *
@@ -106,19 +108,53 @@ def DeleteDailyFiles():
     os.system('rm ./data/symbols.json')
     os.system('cp ./data/basic/symbols-empty.json ./data/symbols.json')
 
+def DeleteCorrFiles():
+    os.system('rm ./data/corr*.json')
+    os.system('rm ./data/inve*.json')
 
+def isNewMarketDay():
+    jsonfilename = 'last_process.json'
+    lastProcessDate = AlpacaSnapshots.LastProcessDate()
+    fhandle = JsonFavorite(filename=jsonfilename, readJsonFile=False)
+    if not fhandle.IsFileExists():
+        return True
+    try:
+        data = fhandle.readJson()
+        if len(data.keys()) <= 0:
+            return True
+        return data['lastdate'] != lastProcessDate
+    except Exception as e:
+        return False
+
+def marketDayProcessed():
+    jsonfilename = 'last_process.json'
+    lastProcessDate = AlpacaSnapshots.LastProcessDate()
+    fhandle = JsonFavorite(filename=jsonfilename, readJsonFile=False)
+    fhandle.EmptyJson()
+    fhandle.WriteJson({'lastdate':lastProcessDate})
+    
 def RunApp():
     today = datetime.now()
     print(f'{today.hour} {today.minute}')
-    if today.hour == 21 and today.minute == 15:
-        DeleteDailyFiles()
-        AppDaily()
-    elif today.hour == 5 and today.minute == 30:
-        AppMarketOpen(False)
-    elif today.hour == 6 and today.minute == 0:
-        AppMarketOpen(False)
-    elif today.hour == 6 and today.minute == 20:
-        AppMarketOpen(True)
+    if today.weekday() in [0, 1, 2, 3, 4]:
+        if today.hour == 22 and today.minute == 1 and isNewMarketDay():
+            DeleteDailyFiles()
+            AppDaily()
+            marketDayProcessed()
+        elif today.hour == 5 and today.minute == 30:
+            AppMarketOpen(False)
+        elif today.hour == 6 and today.minute == 0:
+            AppMarketOpen(False)
+        elif today.hour == 6 and today.minute == 20:
+            AppMarketOpen(True)
+    if today.weekday() == 5:
+        if today.hour == 3 and today.minute == 0:
+            StockFinancial.All(isDebug=True, isForceDl=True)
+    if today.weekday() == 6:
+        if today.hour == 3 and today.minute == 0:
+            DeleteCorrFiles()
+            AppCorrelation()
+
 
 if __name__ == "__main__":
     formatter = '%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s'
@@ -127,24 +163,27 @@ if __name__ == "__main__":
     logging.info("APP.PY Started")
 
     opts, args = getopt.getopt(sys.argv[1:], 'trmcdf', [
-                            'test', 'run', 'marketopen', 'marketclose', 'daily', 'day', 'fin'])
+                            'test', 'run', 'marketopen', 'marketclose', 'daily', 'day', 'fin', 'reset'])
     for opt, arg in opts:
         if opt == '--test':
-            FilterRsiDivergence.All()
-            logging.info(
-                '----------------------> Complete FilterRsiDivergence.All')
-            PushToServer()
-            logging.info('----------------------> Complete PushToServer')
+            today = datetime.now()
+            # convert date to day of week
+            print('test')
+            print(isNewMarketDay())
+            marketDayProcessed()
         elif opt == '--reset':
             AppDeleteMarketDataTable()
             AppDaily()
+            marketDayProcessed()
         elif opt == '--mo':
             AppMarketOpen()
         elif opt == '--corr':
+            DeleteCorrFiles()
             AppCorrelation()
         elif opt == '--day':
             DeleteDailyFiles()
             AppDaily()
+            marketDayProcessed()
         elif opt == '--fin':
             StockFinancial.All(isDebug=True, isForceDl=True)
         else:
