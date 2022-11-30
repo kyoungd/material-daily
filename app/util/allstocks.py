@@ -1,11 +1,10 @@
 from requests.structures import CaseInsensitiveDict
 import pandas as pd
-import os
 import logging
 import requests
 from .environ import EnvFile
 from dbase import MarketDataDb
-
+from .redisHash import JwtSysOp
 
 class AllStocks:
     favorites:dict = {}
@@ -14,7 +13,9 @@ class AllStocks:
     def DownloadFavorites():
         # call rest api http get with bearer token and request.get
         try:
-            url:token = EnvFile.Get("URL_GET_ALL_FAVORITES", "https://simp-admin.herokuapp.com/api/favorites")
+            url:token = EnvFile.Get("URL_GET_ALL_FAVORITES", "https://simp-admin.herokuapp.com/api/api/favorites")
+            jwt = JwtSysOp.run()
+            print(jwt)
             token:str = EnvFile.Get("ADMIN_SYSOPS_TOKEN", "")
             headers = CaseInsensitiveDict()
             headers["Accept"] = "application/json"
@@ -207,5 +208,7 @@ class AllStocks:
             return False, None
 
 if __name__ == '__main__':
-    result = AllStocks.GetWeeklyStockData('AAPL')
-    print(result)
+    result1 = AllStocks.DownloadFavorites()
+    print(result1)
+    result2 = AllStocks.GetWeeklyStockData('AAPL')
+    print(result2)

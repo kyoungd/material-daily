@@ -2,7 +2,6 @@
 from alpaca_trade_api.rest import REST, TimeFrame
 from enum import Enum
 import requests
-from sympy import EX
 from util import AlpacaAccess, JsonFavorite, EnvFile
 import logging
 import json

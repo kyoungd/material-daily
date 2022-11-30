@@ -5,7 +5,6 @@ import logging
 import pandas as pd
 from datetime import datetime
 
-from tensorflow_hub import LatestModuleExporter
 from alpaca import *
 from util import *
 from study import *
@@ -169,8 +168,7 @@ if __name__ == "__main__":
             today = datetime.now()
             # convert date to day of week
             print('test')
-            print(isNewMarketDay())
-            marketDayProcessed()
+            AllStocks.DownloadFavorites()
         elif opt == '--reset':
             AppDeleteMarketDataTable()
             AppDaily()

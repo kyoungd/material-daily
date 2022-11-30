@@ -39,3 +39,29 @@ L-Cysteine
 Nicotinamide Riboside
 Hyalurionic Acid
 Melatonin
+
+
+### Virtual Environment (pip install)
+pip install virtualenv
+virtualenv --version
+virtualenv <env-name>
+source <env-name>/bin/activate
+deactivate
+
+pip install <package>
+pip uninstall <package>
+
+
+### INSTALL TA-LIB
+
+https://sourceforge.net/projects/ta-lib/files/ta-lib/0.4.0/ta-lib-0.4.0-src.tar.gz/download?use_mirror=gigenet
+Download ta-lib-0.4.0-src.tar.gz and:
+
+$ tar -xzf ta-lib-0.4.0-src.tar.gz
+$ cd ta-lib/
+$ ./configure --prefix=/usr
+$ make
+$ sudo make install
+
+$ sudo apt-get install python3-dev
+$ python3 -m pip install TA-Lib
