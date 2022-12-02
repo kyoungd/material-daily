@@ -1,6 +1,6 @@
 import logging
 import requests
-from environ import EnvFile
+from .environ import EnvFile
 from datetime import datetime
 import os
 

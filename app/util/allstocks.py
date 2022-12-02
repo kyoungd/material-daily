@@ -4,7 +4,7 @@ import logging
 import requests
 from .environ import EnvFile
 from dbase import MarketDataDb
-from .redisHash import JwtSysOp
+from .utilGetJwt import GetJwtFromSite
 
 class AllStocks:
     favorites:dict = {}
@@ -14,9 +14,7 @@ class AllStocks:
         # call rest api http get with bearer token and request.get
         try:
             url:token = EnvFile.Get("URL_GET_ALL_FAVORITES", "https://simp-admin.herokuapp.com/api/api/favorites")
-            jwt = JwtSysOp.run()
-            print(jwt)
-            token:str = EnvFile.Get("ADMIN_SYSOPS_TOKEN", "")
+            token:str = GetJwtFromSite.run()
             headers = CaseInsensitiveDict()
             headers["Accept"] = "application/json"
             headers["Authorization"] = f"Bearer {token}"
